@@ -24,23 +24,20 @@ export default defineType({
       group: 'details',
       validation: (Rule) => Rule.required(),
     }),
-    // --- NEW DEALER CODE FIELD ---
+    // --- SIMPLIFIED DEALER CODE FIELD ---
     defineField({
       name: 'dealerCode',
-      title: 'Dealer Code',
+      title: 'Dealer Code (Optional)',
+      // Changed back to string
       type: 'string',
-      description: 'Unique identifier for the dealer (e.g., HELLOEV-1001).',
-      group: 'details', // Added to the 'details' group
-      validation: (Rule) => [
-        Rule.required(),
-        Rule.unique().error('This Dealer Code is already in use.'),
-        Rule.regex(
-          /^[A-Z0-9]+-\d{4}$/, // Regex for PREFIX(uppercase/digits)-FOURDIGITS
-          { name: 'dealerCodeFormat', invert: false } // Optional name for the constraint
-        ).error('Format must be PREFIX-#### (e.g., HELLOEV-1001, KABIRA-9876). Prefix can be uppercase letters or numbers.')
-      ],
+      description: 'Optional internal identifier for the dealer (e.g., HELLOEV-1001).',
+      group: 'details',
+      // Removed all validation: required(), unique(), regex()
+      // validation: (Rule) => [...] // REMOVED
+      // Removed options block
+      // options: { ... } // REMOVED
     }),
-    // --- END NEW FIELD ---
+    // --- END SIMPLIFIED FIELD ---
     defineField({
       name: 'image',
       title: 'Dealer Image',
@@ -102,10 +99,11 @@ export default defineType({
       title: 'Operating Hours',
       type: 'array',
       group: 'hours',
-      description: 'Specify opening and closing times for each day. Defaults to Mon-Sat 9-6, Sun Closed.',
+      description:
+        'Specify opening and closing times for each day. Defaults to Mon-Sat 9-6, Sun Closed.',
       of: [{type: 'dealerHours'}],
       initialValue: defaultDealerHours,
-      validation: Rule => Rule.unique().error('Each day can only be listed once.'),
+      validation: (Rule) => Rule.unique().error('Each day can only be listed once.'),
     }),
 
     // Meta Group
@@ -129,14 +127,15 @@ export default defineType({
   preview: {
     select: {
       title: 'name',
-      dealerCode: 'dealerCode', // Select the dealer code for preview
+      dealerCode: 'dealerCode',
       city: 'address.city',
       state: 'address.state',
       media: 'image',
     },
-     prepare({title, dealerCode, city, state, media}) {
+    prepare({title, dealerCode, city, state, media}) {
       const location = [city, state].filter(Boolean).join(', ')
-      const subtitle = dealerCode ? `${dealerCode} | ${location}` : location; // Add code to subtitle
+      // Handle optional dealerCode in subtitle
+      const subtitle = dealerCode ? `${dealerCode} | ${location}` : location
       return {
         title: title || 'Untitled Dealer',
         subtitle: subtitle,
