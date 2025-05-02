@@ -1,38 +1,40 @@
 {
   "name": "@kabira/cms",
+  "private": true,
   "version": "1.0.0",
-  "description": "Payload CMS backend for Kabira Mobility",
-  "license": "MIT",
-  "type": "module",
+  "main": "package.json",
+  "license": "UNLICENSED",
   "scripts": {
-    "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
-    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
-    "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
-    "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
-    "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint",
-    "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
-    "start": "cross-env NODE_OPTIONS=--no-deprecation next start"
+    "dev": "sanity dev",
+    "start": "sanity start",
+    "build": "sanity build",
+    "deploy": "sanity deploy",
+    "deploy-graphql": "sanity graphql deploy",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
+  "keywords": [
+    "sanity"
+  ],
   "dependencies": {
-    "@payloadcms/db-postgres": "3.33.0",
-    "@payloadcms/next": "3.33.0",
-    "@payloadcms/payload-cloud": "3.33.0",
-    "@payloadcms/richtext-lexical": "3.33.0",
-    "graphql": "^16.8.1",
-    "next": "15.3.0",
-    "payload": "3.33.0",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "sharp": "0.32.6",
-    "razorpay": "^2.9.4",
-    "resend": "^3.4.0"
+    "@sanity/color-input": "^4.0.3",
+    "@sanity/icons": "^3.7.0",
+    "@sanity/vision": "^3.87.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "sanity": "^3.87.0",
+    "styled-components": "^6.1.15"
   },
   "devDependencies": {
-    "@types/node": "^22.5.4",
-    "@types/react": "19.1.0",
-    "@types/react-dom": "19.1.2",
-    "dotenv": "^16.4.5",
-    "eslint-config-next": "15.3.0",
-    "ts-node": "^10.9.2"
+    "@sanity/eslint-config-studio": "^5.0.2",
+    "@types/react": "^18.0.25",
+    "eslint": "^9.9.0",
+    "prettier": "^3.0.2",
+    "typescript": "^5.1.6"
+  },
+  "prettier": {
+    "semi": false,
+    "printWidth": 100,
+    "bracketSpacing": false,
+    "singleQuote": true
   }
 }

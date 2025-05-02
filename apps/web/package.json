@@ -1,5 +1,5 @@
 {
-  "name": "kabira-booking-next",
+  "name": "@kabira/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@sanity/client": "^6.23.0",
+    "next-sanity": "^9.10.6",
     "@radix-ui/react-checkbox": "^1.2.3",
     "@radix-ui/react-dialog": "^1.1.11",
     "@radix-ui/react-label": "^2.1.4",
@@ -34,6 +36,11 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "tailwindcss": "^4",
-    "tw-animate-css": "^1.2.8"
+    "tw-animate-css": "^1.2.8",
+    "@types/node": "20.16.1",
+    "@types/react": "19.x",
+    "@types/react-dom": "19.x",
+    "typescript": "5.7.3",
+    "eslint-config-next": "15.3.1"
   }
 }
