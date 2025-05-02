@@ -1,3 +1,4 @@
+// apps/cms/schemas/documents/dealer.ts
 import {defineField, defineType} from 'sanity'
 import {PinIcon} from '@sanity/icons'
 import {defaultDealerHours} from '../constants' // Import default hours
@@ -23,14 +24,31 @@ export default defineType({
       group: 'details',
       validation: (Rule) => Rule.required(),
     }),
+    // --- NEW DEALER CODE FIELD ---
     defineField({
-      name: 'image', // Changed from imageUrl
+      name: 'dealerCode',
+      title: 'Dealer Code',
+      type: 'string',
+      description: 'Unique identifier for the dealer (e.g., HELLOEV-1001).',
+      group: 'details', // Added to the 'details' group
+      validation: (Rule) => [
+        Rule.required(),
+        Rule.unique().error('This Dealer Code is already in use.'),
+        Rule.regex(
+          /^[A-Z0-9]+-\d{4}$/, // Regex for PREFIX(uppercase/digits)-FOURDIGITS
+          { name: 'dealerCodeFormat', invert: false } // Optional name for the constraint
+        ).error('Format must be PREFIX-#### (e.g., HELLOEV-1001, KABIRA-9876). Prefix can be uppercase letters or numbers.')
+      ],
+    }),
+    // --- END NEW FIELD ---
+    defineField({
+      name: 'image',
       title: 'Dealer Image',
       type: 'image',
       description: 'Upload a primary photo for the dealership.',
       group: 'details',
       options: {
-        hotspot: true, // Allows focusing the image
+        hotspot: true,
       },
     }),
     defineField({
@@ -54,7 +72,7 @@ export default defineType({
           {title: 'Charging', value: 'charging'},
           {title: 'Test Rides', value: 'test-rides'},
         ],
-        layout: 'tags', // Checkboxes are also good: 'checkbox'
+        layout: 'tags',
       },
     }),
 
@@ -73,7 +91,7 @@ export default defineType({
       group: 'location',
       description: 'Precise location for map display. Click the map to set.',
       options: {
-        withAltitude: false, // Explicitly disable altitude
+        withAltitude: false,
       },
       validation: (Rule) => Rule.required(),
     }),
@@ -86,8 +104,8 @@ export default defineType({
       group: 'hours',
       description: 'Specify opening and closing times for each day. Defaults to Mon-Sat 9-6, Sun Closed.',
       of: [{type: 'dealerHours'}],
-      initialValue: defaultDealerHours, // Set the default hours
-      validation: (Rule) => Rule.unique().error('Each day can only be listed once.'),
+      initialValue: defaultDealerHours,
+      validation: Rule => Rule.unique().error('Each day can only be listed once.'),
     }),
 
     // Meta Group
@@ -111,16 +129,18 @@ export default defineType({
   preview: {
     select: {
       title: 'name',
+      dealerCode: 'dealerCode', // Select the dealer code for preview
       city: 'address.city',
       state: 'address.state',
-      media: 'image', // Use the 'image' field
+      media: 'image',
     },
-    prepare({title, city, state, media}) {
-      const subtitle = [city, state].filter(Boolean).join(', ')
+     prepare({title, dealerCode, city, state, media}) {
+      const location = [city, state].filter(Boolean).join(', ')
+      const subtitle = dealerCode ? `${dealerCode} | ${location}` : location; // Add code to subtitle
       return {
         title: title || 'Untitled Dealer',
         subtitle: subtitle,
-        media: media || PinIcon, // Use PinIcon as fallback
+        media: media || PinIcon,
       }
     },
   },

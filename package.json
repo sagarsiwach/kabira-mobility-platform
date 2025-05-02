@@ -1,42 +1,40 @@
 {
-  "name": "kabira-mobility-platform",
-  "version": "1.0.0",
+  "name": "kabira-cms",
   "private": true,
-  "description": "Monorepo for Kabira Mobility Platform",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "version": "1.0.0",
+  "main": "package.json",
+  "license": "UNLICENSED",
   "scripts": {
-    "dev:web": "bun run --filter @kabira/web dev",
-    "dev:cms": "bun run --filter @kabira/cms dev",
-    "dev": "bun run dev:web & bun run dev:cms",
-    "build:web": "bun run --filter @kabira/web build",
-    "build:cms": "bun run --filter @kabira/cms build",
-    "build": "bun run build:cms && bun run build:web",
-    "start:web": "bun run --filter @kabira/web start",
-    "start:cms": "bun run --filter @kabira/cms start",
-    "lint": "bun run lint:cms && bun run lint:web",
-    "lint:web": "bun run --filter @kabira/web lint",
-    "lint:cms": "bun run --filter @kabira/cms lint",
-    "format": "prettier --write \"apps/**/*.{js,jsx,ts,tsx,json,css,md}\" \"packages/**/*.{js,jsx,ts,tsx,json,css,md}\" \"*.{js,json,md}\" --ignore-path .gitignore"
+    "dev": "sanity dev",
+    "start": "sanity start",
+    "build": "sanity build",
+    "deploy": "sanity deploy",
+    "deploy-graphql": "sanity graphql deploy",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@eslint/eslintrc": "^3.2.0",
-    "cross-env": "^7.0.3",
-    "eslint": "^9.16.0",
-    "prettier": "^3.4.2",
-    "prettier-plugin-tailwindcss": "^0.6.5",
-    "typescript": "5.7.3"
-  },
-  "engines": {
-    "node": "^18.20.2 || >=20.9.0",
-    "bun": ">= 1.0.0"
-  },
+  "keywords": [
+    "sanity"
+  ],
   "dependencies": {
-
+    "@sanity/color-input": "^4.0.3",
+    "@sanity/icons": "^3.7.0",
+    "@sanity/vision": "^3.87.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "sanity": "^3.87.0",
+    "styled-components": "^6.1.15"
+  },
+  "devDependencies": {
+    "@sanity/eslint-config-studio": "^5.0.2",
+    "@types/react": "^18.0.25",
+    "eslint": "^9.9.0",
+    "prettier": "^3.0.2",
+    "typescript": "^5.1.6"
+  },
+  "prettier": {
+    "semi": false,
+    "printWidth": 100,
+    "bracketSpacing": false,
+    "singleQuote": true
   }
 }
