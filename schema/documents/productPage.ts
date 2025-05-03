@@ -1,7 +1,6 @@
 // schema/documents/productPage.ts
-
 import {defineField, defineType} from 'sanity'
-import {RocketIcon} from '@sanity/icons'
+import {RocketIcon, HelpCircleIcon} from '@sanity/icons' // Ensure HelpCircleIcon is imported
 
 export default defineType({
   name: 'productPage',
@@ -13,10 +12,11 @@ export default defineType({
     {name: 'configurator', title: 'Vehicle Configurator'},
     {name: 'features', title: 'Feature Carousels'},
     {name: 'specifications', title: 'Technical Specifications'},
-    {name: 'faqs', title: 'FAQ Section'},
+    {name: 'faqs', title: 'FAQ Section'}, // Group for FAQ related fields
     {name: 'videos', title: 'Video Section'},
     {name: 'testimonials', title: 'Testimonials'},
     {name: 'seo', title: 'SEO & Metadata'},
+    // Add other groups as needed, e.g., {name: 'contentSections', title: 'Other Content'}
   ],
   fields: [
     // Basic Product Information
@@ -25,7 +25,7 @@ export default defineType({
       title: 'Product Title',
       type: 'string',
       description: 'The main name of the product (e.g., KM4000)',
-      // Removed validation rule to make it optional
+      // Keep optional as per original
     }),
     defineField({
       name: 'slug',
@@ -36,7 +36,7 @@ export default defineType({
         source: 'title',
         maxLength: 96,
       },
-      // Removed validation rule to make it optional
+      // Keep optional as per original
     }),
     defineField({
       name: 'active',
@@ -53,7 +53,6 @@ export default defineType({
       group: 'hero',
       type: 'heroSection',
       description: 'The main promotional section at the top of the page',
-      // Already optional
     }),
 
     // Configurator
@@ -63,7 +62,6 @@ export default defineType({
       group: 'configurator',
       type: 'configuratorData',
       description: 'JSON data for the 3D configurator/turntable',
-      // Already optional
     }),
 
     // Feature Carousels (Multiple)
@@ -73,29 +71,65 @@ export default defineType({
       group: 'features',
       type: 'array',
       of: [{type: 'featureCarousel'}],
-      description: 'Multiple feature carousels that can be added to different sections of the page',
-      // Removed validation rule to make it optional
+      description: 'Multiple feature carousels sections',
     }),
 
-    // Tech Specs
+    // Technical Specifications (Using the updated object)
     defineField({
       name: 'techSpecs',
       title: 'Technical Specifications',
-      group: 'specifications',
-      type: 'techSpecsSection',
-      description: 'Detailed specifications presented in a structured format',
-      // Already optional
+      group: 'specifications', // Assign to the 'specifications' group
+      type: 'techSpecsSection', // Use the updated object type
+      description: 'Detailed specifications organized into groups.',
     }),
 
-    // FAQ Section
+    // --- FAQ Section Fields (Using Global FAQs) ---
     defineField({
-      name: 'faqSection',
-      title: 'FAQ Section',
-      group: 'faqs',
-      type: 'faqSection',
-      description: 'Frequently asked questions about the product',
-      // Already optional
+      name: 'faqSectionTitle',
+      title: 'FAQ Section Title Override',
+      type: 'string',
+      group: 'faqs', // Assign to the 'faqs' group
+      description:
+        'Optional: Title displayed above the FAQ list on this page (e.g., "KM4000 FAQs"). Defaults to "Frequently Asked Questions" if empty.',
     }),
+    defineField({
+      name: 'referencedFaqs',
+      title: 'Select FAQs for this Page',
+      type: 'array',
+      group: 'faqs', // Assign to the 'faqs' group
+      description:
+        'Choose relevant FAQs from the global library to display on this specific product page.',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'faqItem'}], // Reference the global FAQ document type
+          options: {
+            // You can add filters here later if needed, e.g., based on tags
+            // filter: '_type == "faqItem" && "battery" in tags'
+          },
+        },
+      ],
+      validation: (Rule) => Rule.unique().error('Each FAQ can only be added once to this page.'),
+    }),
+    defineField({
+      name: 'faqAllowMultipleOpen',
+      title: 'Allow Multiple Open FAQs?',
+      type: 'boolean',
+      group: 'faqs', // Assign to the 'faqs' group
+      description: 'Allow users to expand multiple questions at once in the UI.',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'faqInitialOpenIndex',
+      title: 'Initially Open FAQ Index',
+      type: 'number',
+      group: 'faqs', // Assign to the 'faqs' group
+      description:
+        'Index (0=first selected, 1=second selected, etc.) of the FAQ to show open by default. Use -1 or leave empty for none.',
+      initialValue: -1,
+      validation: (Rule) => Rule.integer(),
+    }),
+    // --- End FAQ Section Fields ---
 
     // Video Section
     defineField({
@@ -103,8 +137,7 @@ export default defineType({
       title: 'Video Section',
       group: 'videos',
       type: 'videoSection',
-      description: 'Product video showcase with hover-to-play functionality',
-      // Already optional
+      description: 'Product video showcase section',
     }),
 
     // Testimonial Section
@@ -113,8 +146,7 @@ export default defineType({
       title: 'Testimonial Section',
       group: 'testimonials',
       type: 'testimonialSection',
-      description: 'Customer reviews and testimonials',
-      // Already optional
+      description: 'Customer reviews and testimonials section',
     }),
 
     // SEO & Metadata
@@ -124,20 +156,19 @@ export default defineType({
       group: 'seo',
       type: 'seoSettings',
       description: 'Search engine optimization settings for this product page',
-      // Already optional
     }),
   ],
   preview: {
     select: {
       title: 'title',
       active: 'active',
-      media: 'heroSection.image',
+      media: 'heroSection.image', // Use hero image for preview
     },
     prepare({title, active, media}) {
       return {
-        title: title || 'Untitled Product',
-        subtitle: active ? 'Active' : 'Inactive',
-        media: media || RocketIcon,
+        title: title || 'Untitled Product Page',
+        subtitle: active ? 'Status: Active' : 'Status: Inactive',
+        media: media || RocketIcon, // Fallback to icon if no hero image
       }
     },
   },

@@ -1,112 +1,69 @@
-// schema/objects/techSpecsSection.ts
-
+// schema/objects/techSpecsSection.ts (Updated)
 import {defineField, defineType} from 'sanity'
 import {MasterDetailIcon} from '@sanity/icons'
 
 export default defineType({
   name: 'techSpecsSection',
-  title: 'Technical Specifications',
+  title: 'Technical Specifications Section',
   type: 'object',
   icon: MasterDetailIcon,
   fields: [
+    // Section Header Fields (Optional)
     defineField({
-      name: 'showModelHeader',
-      title: 'Show Model Header',
-      type: 'boolean',
-      description: 'Whether to display the model name and image header',
-      initialValue: true,
-    }),
-    defineField({
-      name: 'modelName',
-      title: 'Model Name',
+      name: 'sectionTitle',
+      title: 'Overall Section Title',
       type: 'string',
-      description: 'The model designation shown in the header',
-      hidden: ({parent}) => !parent?.showModelHeader,
+      description:
+        'Optional heading for the entire tech specs block on the page (e.g., "KM4000 Specifications").',
     }),
     defineField({
-      name: 'modelSubline',
-      title: 'Model Subline',
+      name: 'sectionSubtitle',
+      title: 'Overall Section Subtitle',
       type: 'string',
-      description: 'Secondary text shown below model name (e.g., price range)',
-      hidden: ({parent}) => !parent?.showModelHeader,
+      description: 'Optional subheading for the tech specs block.',
     }),
+    // Optional: If you want a main image SPECIFICALLY for the specs section header
+    // defineField({
+    //   name: 'sectionHeaderImage',
+    //   title: 'Section Header Image',
+    //   type: 'image',
+    //   options: { hotspot: true }
+    // }),
+
+    // --- Specification Groups (Performance, Battery, etc.) ---
     defineField({
-      name: 'headerImage',
-      title: 'Header Image',
-      type: 'image',
-      description: 'Optional image displayed in the header section',
-      options: {
-        hotspot: true,
-      },
-      hidden: ({parent}) => !parent?.showModelHeader,
-    }),
-    defineField({
-      name: 'specSections',
-      title: 'Specification Sections',
+      name: 'specGroups',
+      title: 'Specification Groups',
       type: 'array',
+      description:
+        'Organize specifications into logical groups (e.g., Performance, Battery, Colors). Add groups as needed.',
       of: [
         {
           type: 'object',
-          name: 'specSection',
+          name: 'specGroup',
+          title: 'Specification Group',
           fields: [
             defineField({
-              name: 'id',
-              title: 'Section ID',
+              name: 'title',
+              title: 'Group Title',
               type: 'string',
               description:
-                'Unique identifier for this spec section (system will generate if not provided)',
-            }),
-            defineField({
-              name: 'title',
-              title: 'Section Title',
-              type: 'string',
-              description: 'Heading for this group of specifications',
+                'Heading for this group (e.g., "Performance", "Battery", "Colors Available", "Features")',
               validation: (Rule) => Rule.required(),
             }),
-            defineField({
-              name: 'type',
-              title: 'Section Type',
-              type: 'string',
-              options: {
-                list: [
-                  {title: 'Key/Value Pair', value: 'keyValue'},
-                  {title: 'Key/Value Grid', value: 'keyValueGrid'},
-                  {title: 'Color Swatches', value: 'colorSwatch'},
-                  {title: 'Icon Grid', value: 'iconGrid'},
-                  {title: 'Simple List', value: 'simpleList'},
-                ],
-              },
-              validation: (Rule) => Rule.required(),
-            }),
+            // --- Items within this Group ---
             defineField({
               name: 'items',
-              title: 'Specification Items',
+              title: 'Specifications / Items in this Group',
               type: 'array',
+              description: 'Add the specific data points for this group.',
+              // Define WHICH specific spec types can be added here:
               of: [
+                {type: 'specKeyValue', title: 'Key/Value Pair (for Range, Perf, Battery etc.)'},
+                {type: 'specColorSwatchDisplay', title: 'Color Swatch (for Colors Available)'},
                 {
-                  type: 'object',
-                  name: 'specItem',
-                  fields: [
-                    defineField({
-                      name: 'label',
-                      title: 'Label',
-                      type: 'string',
-                      description: 'The name/label of the specification (optional for some types)',
-                    }),
-                    defineField({
-                      name: 'value',
-                      title: 'Value',
-                      type: 'string',
-                      description: 'The value, URL, or hex color code depending on section type',
-                      validation: (Rule) => Rule.required(),
-                    }),
-                    defineField({
-                      name: 'alt',
-                      title: 'Alt Text / Tooltip',
-                      type: 'string',
-                      description: 'Alternative text or tooltip (used for colors and icons)',
-                    }),
-                  ],
+                  type: 'specSimpleListItem',
+                  title: 'Simple List Item (for Connectivity, Features)',
                 },
               ],
               validation: (Rule) => Rule.required().min(1),
@@ -115,19 +72,37 @@ export default defineType({
           preview: {
             select: {
               title: 'title',
-              type: 'type',
               itemCount: 'items.length',
             },
-            prepare({title, type, itemCount = 0}) {
+            prepare({title, itemCount = 0}) {
+              // Determine a representative icon based on title maybe? (Advanced)
+              let icon = MasterDetailIcon // Default
+              // Example: if (title?.toLowerCase().includes('color')) icon = DropIcon;
               return {
-                title: title || 'Untitled Section',
-                subtitle: `${type || 'Unknown type'} • ${itemCount} item${itemCount === 1 ? '' : 's'}`,
+                title: title || 'Untitled Spec Group',
+                subtitle: `${itemCount} item${itemCount === 1 ? '' : 's'}`,
+                icon: icon,
               }
             },
           },
         },
       ],
-      validation: (Rule) => Rule.required().min(1),
+      validation: (Rule) => Rule.required().min(1).error('Add at least one specification group.'),
     }),
   ],
+  preview: {
+    // Preview for the whole techSpecsSection object when used in productPage
+    select: {
+      title: 'sectionTitle',
+      groups: 'specGroups',
+    },
+    prepare({title, groups}) {
+      const groupCount = groups?.length || 0
+      return {
+        title: title || 'Technical Specifications',
+        subtitle: `${groupCount} group${groupCount === 1 ? '' : 's'}`,
+        icon: MasterDetailIcon,
+      }
+    },
+  },
 })

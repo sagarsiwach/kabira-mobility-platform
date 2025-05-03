@@ -3,20 +3,21 @@ import {StructureBuilder} from 'sanity/structure'
 import {
   CogIcon,
   PinIcon,
+  CubeIcon,
   RocketIcon,
-  ImagesIcon,
-  DocumentTextIcon,
-  TagIcon,
-  UserIcon,
   BillIcon,
-  MenuIcon,
-} from '@sanity/icons' // Import relevant icons
+  ComposeIcon,
+  DocumentTextIcon,
+  TagIcon, // Re-used for FAQ Category
+  UserIcon,
+  HelpCircleIcon, // Re-used for FAQ Items list
+} from '@sanity/icons' // Import necessary icons
 
 export const structure = (S: StructureBuilder) =>
   S.list()
     .title('Kabira Mobility Content')
     .items([
-      // --- Settings & Configuration ---
+      // --- 1. Site Settings ---
       S.listItem()
         .title('Site Settings')
         .icon(CogIcon)
@@ -26,7 +27,6 @@ export const structure = (S: StructureBuilder) =>
             .items([
               S.listItem()
                 .title('Navigation')
-                .icon(MenuIcon)
                 .id('navigationSettings')
                 .child(
                   S.document()
@@ -34,42 +34,73 @@ export const structure = (S: StructureBuilder) =>
                     .documentId('navigationSettings')
                     .title('Navigation Settings'),
                 ),
-              // Add other singletons/settings here later if needed
-              // e.g., Global SEO, Social Links, etc.
             ]),
         ),
 
       S.divider(),
 
-      // --- Core Business Data ---
-      S.listItem()
-        .title('Vehicles & Products')
-        .icon(RocketIcon)
-        .child(
-          S.list()
-            .title('Vehicles & Products')
-            .items([
-              S.documentTypeListItem('vehicleModel').title('Vehicle Models (Core Data)'),
-              S.documentTypeListItem('productPage').title('Product Landing Pages'),
-            ]),
-        ),
+      // --- 2. Dealers ---
       S.documentTypeListItem('dealer').title('Dealers').icon(PinIcon),
 
       S.divider(),
 
-      // --- Website Content ---
+      // --- 3. Bookings (Vehicle Models) ---
+      S.documentTypeListItem('vehicleModel').title('Bookings (Vehicle Models)').icon(CubeIcon),
+
+      S.divider(),
+
+      // --- 4. Product Pages ---
+      S.documentTypeListItem('productPage').title('Product Pages').icon(RocketIcon),
+
+      S.divider(),
+
+      // --- 5. Legal Pages ---
+      S.documentTypeListItem('legalPage').title('Legal Pages').icon(BillIcon),
+
+      S.divider(),
+
+      // --- 6. Blog ---
       S.listItem()
-        .title('Website Content')
-        .icon(ImagesIcon)
+        .title('Blog')
+        .icon(ComposeIcon)
         .child(
           S.list()
-            .title('Content')
+            .title('Blog Content')
             .items([
-              S.documentTypeListItem('post').title('Blog Posts').icon(DocumentTextIcon),
-              S.documentTypeListItem('category').title('Blog Categories').icon(TagIcon),
+              S.documentTypeListItem('post').title('Posts').icon(DocumentTextIcon),
+              S.documentTypeListItem('category').title('Categories').icon(TagIcon), // Blog Categories
               S.documentTypeListItem('author').title('Authors').icon(UserIcon),
-              S.divider(),
-              S.documentTypeListItem('legalPage').title('Legal Pages').icon(BillIcon),
+            ]),
+        ),
+
+      S.divider(),
+
+      // --- 7. FAQ (Folder Structure) ---
+      S.listItem()
+        .title('FAQ') // Main folder title
+        .icon(HelpCircleIcon) // Icon for the FAQ section itself
+        .child(
+          S.list()
+            .title('FAQ Management') // Title inside the folder
+            .items([
+              // Link to manage FAQ Items, sorted by category
+              S.listItem()
+                .title('All FAQs')
+                .icon(HelpCircleIcon) // Icon for the list of FAQs
+                .child(
+                  S.documentList()
+                    .title('FAQs by Category')
+                    .schemaType('faqItem')
+                    .filter('_type == "faqItem"')
+                    // Use reference field for sorting if you updated faqItem schema
+                    .defaultOrdering([
+                      {field: 'category.title', direction: 'asc'},
+                      {field: '_createdAt', direction: 'desc'},
+                    ]),
+                  // If still using string category, use: .defaultOrdering([{field: 'category', direction: 'asc'}])
+                ),
+              // Link to manage FAQ Categories
+              S.documentTypeListItem('faqCategory').title('FAQ Categories').icon(TagIcon), // Use TagIcon for categories
             ]),
         ),
     ])
