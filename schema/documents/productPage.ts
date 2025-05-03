@@ -25,7 +25,7 @@ export default defineType({
       title: 'Product Title',
       type: 'string',
       description: 'The main name of the product (e.g., KM4000)',
-      validation: (Rule) => Rule.required(),
+      // Removed validation rule to make it optional
     }),
     defineField({
       name: 'slug',
@@ -36,7 +36,7 @@ export default defineType({
         source: 'title',
         maxLength: 96,
       },
-      validation: (Rule) => Rule.required(),
+      // Removed validation rule to make it optional
     }),
     defineField({
       name: 'active',
@@ -53,6 +53,7 @@ export default defineType({
       group: 'hero',
       type: 'heroSection',
       description: 'The main promotional section at the top of the page',
+      // Already optional
     }),
 
     // Configurator
@@ -62,6 +63,7 @@ export default defineType({
       group: 'configurator',
       type: 'configuratorData',
       description: 'JSON data for the 3D configurator/turntable',
+      // Already optional
     }),
 
     // Feature Carousels (Multiple)
@@ -72,7 +74,7 @@ export default defineType({
       type: 'array',
       of: [{type: 'featureCarousel'}],
       description: 'Multiple feature carousels that can be added to different sections of the page',
-      validation: (Rule) => Rule.required().min(1),
+      // Removed validation rule to make it optional
     }),
 
     // Tech Specs
@@ -82,6 +84,7 @@ export default defineType({
       group: 'specifications',
       type: 'techSpecsSection',
       description: 'Detailed specifications presented in a structured format',
+      // Already optional
     }),
 
     // FAQ Section
@@ -91,6 +94,7 @@ export default defineType({
       group: 'faqs',
       type: 'faqSection',
       description: 'Frequently asked questions about the product',
+      // Already optional
     }),
 
     // Video Section
@@ -100,6 +104,7 @@ export default defineType({
       group: 'videos',
       type: 'videoSection',
       description: 'Product video showcase with hover-to-play functionality',
+      // Already optional
     }),
 
     // Testimonial Section
@@ -109,6 +114,7 @@ export default defineType({
       group: 'testimonials',
       type: 'testimonialSection',
       description: 'Customer reviews and testimonials',
+      // Already optional
     }),
 
     // SEO & Metadata
@@ -118,6 +124,7 @@ export default defineType({
       group: 'seo',
       type: 'seoSettings',
       description: 'Search engine optimization settings for this product page',
+      // Already optional
     }),
   ],
   preview: {
