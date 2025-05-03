@@ -16,9 +16,11 @@
     "sanity"
   ],
   "dependencies": {
+    "@sanity/client": "^7.0.0",
     "@sanity/code-input": "^5.1.2",
     "@sanity/color-input": "^4.0.3",
     "@sanity/icons": "^3.7.0",
+    "@sanity/structure": "^2.36.2",
     "@sanity/vision": "^3.87.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
