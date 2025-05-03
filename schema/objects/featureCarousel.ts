@@ -1,5 +1,4 @@
 // schema/objects/featureCarousel.ts
-
 import {defineField, defineType} from 'sanity'
 import {ImagesIcon} from '@sanity/icons'
 
@@ -34,9 +33,14 @@ export default defineType({
           fields: [
             defineField({
               name: 'id',
-              title: 'Slide ID',
-              type: 'string',
-              description: 'Unique identifier for the slide (system will generate if not provided)',
+              title: 'Slide ID (Optional)',
+              type: 'slug', // Using slug for auto-generation possibility
+              description: 'Unique identifier for linking/analytics (auto-generates from title).',
+              options: {
+                source: 'title',
+                maxLength: 50,
+                slugify: (input) => input.toLowerCase().replace(/\s+/g, '-').slice(0, 50),
+              },
             }),
             defineField({
               name: 'image',
@@ -46,6 +50,17 @@ export default defineType({
               options: {
                 hotspot: true,
               },
+              fields: [
+                // Add alt text
+                defineField({
+                  name: 'alt',
+                  type: 'string',
+                  title: 'Alternative Text',
+                  description: 'Important for SEO and accessibility.',
+                  validation: (Rule) => Rule.required(),
+                  isHighlighted: true,
+                }),
+              ],
               validation: (Rule) => Rule.required(),
             }),
             defineField({
@@ -73,22 +88,22 @@ export default defineType({
               title: 'Overlay Title',
               type: 'string',
               description: 'Title shown in the overlay (defaults to slide title if empty)',
-              hidden: ({parent}) => !parent?.showOverlayButton,
+              hidden: ({parent}) => !(parent as any)?.showOverlayButton, // Corrected hidden logic
             }),
             defineField({
               name: 'overlayBody',
               title: 'Overlay Body',
-              type: 'text',
+              type: 'text', // Changed to simple text for overlay
               rows: 5,
               description: 'Detailed text shown in the overlay when clicked',
-              hidden: ({parent}) => !parent?.showOverlayButton,
+              hidden: ({parent}) => !(parent as any)?.showOverlayButton, // Corrected hidden logic
             }),
             defineField({
               name: 'overlayBgColorOverride',
               title: 'Overlay Background Override',
               type: 'color',
               description: "Optional custom background color for this slide's overlay",
-              hidden: ({parent}) => !parent?.showOverlayButton,
+              hidden: ({parent}) => !(parent as any)?.showOverlayButton, // Corrected hidden logic
             }),
           ],
           preview: {
@@ -110,4 +125,17 @@ export default defineType({
       validation: (Rule) => Rule.required().min(1),
     }),
   ],
+  preview: {
+    select: {
+      title: 'title',
+      slideCount: 'slides.length',
+    },
+    prepare({title, slideCount}) {
+      return {
+        title: title || 'Feature Carousel',
+        subtitle: `${slideCount || 0} slide(s)`,
+        icon: ImagesIcon,
+      }
+    },
+  },
 })

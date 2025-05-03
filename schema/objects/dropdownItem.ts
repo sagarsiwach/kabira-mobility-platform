@@ -1,6 +1,6 @@
 // schema/objects/dropdownItem.ts
 import {defineField, defineType} from 'sanity'
-import {ListIcon, ImageIcon} from '@sanity/icons'
+import {ListIcon} from '@sanity/icons'
 
 export default defineType({
   name: 'dropdownItem',
@@ -33,31 +33,32 @@ export default defineType({
       hidden: ({parent}) => (parent as any)?.itemType !== 'vehicleLink',
       validation: (Rule) =>
         Rule.custom((value, context) => {
-          // *** ONLY validate if this type is selected ***
           if ((context.parent as any)?.itemType === 'vehicleLink' && !value) {
             return 'Vehicle Name Label is required for Vehicle Links.'
           }
-          return true // Pass validation if not this type or if value exists
+          return true
         }),
     }),
     defineField({
       name: 'vehicleLinkUrl',
       title: 'Vehicle Page URL',
-      type: 'string',
+      type: 'string', // Storing as simple string for manual entry
       description:
-        'The relative path or full URL for the vehicle\'s page (e.g., "/products/km4000").',
+        'The relative path for the vehicle\'s page (e.g., "/vehicles/km4000"). Start with /.',
       hidden: ({parent}) => (parent as any)?.itemType !== 'vehicleLink',
       validation: (Rule) =>
         Rule.custom((value, context) => {
-          // *** ONLY validate if this type is selected ***
           if ((context.parent as any)?.itemType === 'vehicleLink' && !value) {
             return 'Vehicle Page URL is required for Vehicle Links.'
           }
-          // Optional: Add more specific path validation if needed
-          // if ((context.parent as any)?.itemType === 'vehicleLink' && value && !/^\/(?:[\w-]+)*$/.test(value) && !value.startsWith('http')) {
-          //   return 'Must be a valid relative path (e.g., /products/model) or a full URL.';
-          // }
-          return true // Pass validation if not this type or if value exists/is valid
+          if (
+            (context.parent as any)?.itemType === 'vehicleLink' &&
+            value &&
+            !value.startsWith('/')
+          ) {
+            return 'Relative URL must start with /'
+          }
+          return true
         }),
     }),
     defineField({
@@ -67,6 +68,16 @@ export default defineType({
       description: 'Optional: Upload or select the image for this vehicle item.',
       options: {hotspot: true},
       hidden: ({parent}) => (parent as any)?.itemType !== 'vehicleLink',
+      fields: [
+        // Add alt text
+        defineField({
+          name: 'alt',
+          type: 'string',
+          title: 'Alternative Text',
+          description: 'Important for SEO and accessibility.',
+          isHighlighted: true,
+        }),
+      ],
     }),
 
     // --- Fields for 'simpleLink' type ---
@@ -78,11 +89,10 @@ export default defineType({
       hidden: ({parent}) => (parent as any)?.itemType !== 'simpleLink',
       validation: (Rule) =>
         Rule.custom((value, context) => {
-          // *** ONLY validate if this type is selected ***
           if ((context.parent as any)?.itemType === 'simpleLink' && !value) {
             return 'Link Label is required for Simple Links.'
           }
-          return true // Pass validation if not this type or if value exists
+          return true
         }),
     }),
     defineField({
@@ -93,25 +103,24 @@ export default defineType({
       hidden: ({parent}) => (parent as any)?.itemType !== 'simpleLink',
       validation: (Rule) =>
         Rule.custom((value, context) => {
-          // *** ONLY validate if this type is selected ***
           if ((context.parent as any)?.itemType === 'simpleLink') {
-            // Check if the nested link object is properly configured
-            if (!(value as any)?._type || !(value as any)?.linkType) {
+            // Check if the nested link object has its core properties defined
+            const linkValue = value as any // Use type assertion
+            if (!linkValue?._type || !linkValue?.linkType) {
               return 'Link Destination configuration is incomplete for Simple Links.'
             }
-            // Add checks for the nested link type's required fields
-            const linkData = value as any
-            if (linkData.linkType === 'internal' && !linkData.internalReference?._ref) {
+            // Check required fields based on the nested linkType
+            if (linkValue.linkType === 'internal' && !linkValue.internalReference?._ref) {
               return 'Internal Link Target is missing in the Link Destination.'
             }
-            if (linkData.linkType === 'external' && !linkData.externalUrl) {
+            if (linkValue.linkType === 'external' && !linkValue.externalUrl) {
               return 'External URL is missing in the Link Destination.'
             }
-            if (linkData.linkType === 'path' && !linkData.path) {
+            if (linkValue.linkType === 'path' && !linkValue.path) {
               return 'Simple Path is missing in the Link Destination.'
             }
           }
-          return true // Pass validation if not this type or if nested link is valid
+          return true
         }),
     }),
   ],

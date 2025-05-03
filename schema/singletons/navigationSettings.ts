@@ -15,10 +15,6 @@ export default defineType({
       initialValue: 'Kabira Mobility',
       readOnly: true,
     }),
-    // --- Logo fields REMOVED ---
-    // defineField({ name: 'logoSvgLight', ... }),
-    // defineField({ name: 'logoSvgDark', ... }),
-
     defineField({
       name: 'desktopMenuItems',
       title: 'Desktop Menu Items',

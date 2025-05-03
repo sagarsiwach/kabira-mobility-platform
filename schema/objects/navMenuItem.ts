@@ -12,7 +12,8 @@ export default defineType({
       name: 'title',
       title: 'Display Title',
       type: 'string',
-      description: 'The text displayed for this top-level menu item (e.g., "Motorbike", "Dealers").',
+      description:
+        'The text displayed for this top-level menu item (e.g., "Motorbike", "Dealers").',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
@@ -34,18 +35,31 @@ export default defineType({
     defineField({
       name: 'link',
       title: 'Link Destination',
-      type: 'link',
+      type: 'link', // Uses the reusable link object
       description: 'Define where this item links to if it\'s a "Direct Link".',
-       // Corrected: Added type assertion for parent
       hidden: ({parent}) => (parent as any)?.itemType !== 'link',
-       validation: (Rule) =>
-         Rule.custom((value, context) => {
-            // Corrected: Added type assertion for parent and check value structure
-           if ((context.parent as any)?.itemType === 'link' && !(value as any)?._type) {
-             return 'A link destination is required for "Direct Link" items.'
-           }
-           return true
-         }),
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const parent = context.parent as any // Explicit type assertion
+          if (parent?.itemType === 'link') {
+            // Check if the nested link object has its core properties defined
+            const linkValue = value as any // Use type assertion
+            if (!linkValue?._type || !linkValue?.linkType) {
+              return 'Link Destination configuration is incomplete.'
+            }
+            // Check required fields based on the nested linkType
+            if (linkValue.linkType === 'internal' && !linkValue.internalReference?._ref) {
+              return 'Internal Link Target is missing.'
+            }
+            if (linkValue.linkType === 'external' && !linkValue.externalUrl) {
+              return 'External URL is missing.'
+            }
+            if (linkValue.linkType === 'path' && !linkValue.path) {
+              return 'Simple Path is missing.'
+            }
+          }
+          return true
+        }),
     }),
     // --- Fields for 'dropdown' type ---
     defineField({
@@ -60,12 +74,11 @@ export default defineType({
         ],
         layout: 'dropdown',
       },
-       // Corrected: Added type assertion for parent
       hidden: ({parent}) => (parent as any)?.itemType !== 'dropdown',
       validation: (Rule) =>
         Rule.custom((value, context) => {
-           // Corrected: Added type assertion for parent
-          if ((context.parent as any)?.itemType === 'dropdown' && !value) {
+          const parent = context.parent as any // Explicit type assertion
+          if (parent?.itemType === 'dropdown' && !value) {
             return 'Dropdown type is required when Item Type is Dropdown.'
           }
           return true
@@ -76,55 +89,64 @@ export default defineType({
       name: 'motorbikeItems',
       title: 'Motorbike Dropdown Items',
       type: 'array',
-      of: [{type: 'dropdownItem'}],
-       // Corrected: Added type assertion for parent
-      hidden: ({parent}) => (parent as any)?.itemType !== 'dropdown' || (parent as any)?.dropdownType !== 'motorbikes',
+      of: [{type: 'dropdownItem'}], // Reference the dropdownItem object
+      hidden: ({parent}) =>
+        (parent as any)?.itemType !== 'dropdown' || (parent as any)?.dropdownType !== 'motorbikes',
       description: 'Add vehicle model links or simple links for the Motorbikes dropdown.',
-       validation: (Rule) =>
-         Rule.custom((value, context) => {
-            // Corrected: Added type assertion for parent
-           const parent = context.parent as any;
-           if (parent?.itemType === 'dropdown' && parent?.dropdownType === 'motorbikes' && (!value || value.length === 0)) {
-             return 'At least one item is required for the Motorbikes dropdown.'
-           }
-           return true
-         }),
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const parent = context.parent as any
+          if (
+            parent?.itemType === 'dropdown' &&
+            parent?.dropdownType === 'motorbikes' &&
+            (!value || (value as any[]).length === 0) // Check if array is empty
+          ) {
+            return 'At least one item is required for the Motorbikes dropdown.'
+          }
+          return true
+        }),
     }),
     defineField({
       name: 'scooterItems',
       title: 'Scooter Dropdown Items',
       type: 'array',
-      of: [{type: 'dropdownItem'}],
-       // Corrected: Added type assertion for parent
-      hidden: ({parent}) => (parent as any)?.itemType !== 'dropdown' || (parent as any)?.dropdownType !== 'scooters',
+      of: [{type: 'dropdownItem'}], // Reference the dropdownItem object
+      hidden: ({parent}) =>
+        (parent as any)?.itemType !== 'dropdown' || (parent as any)?.dropdownType !== 'scooters',
       description: 'Add vehicle model links or simple links for the Scooters dropdown.',
       validation: (Rule) =>
-         Rule.custom((value, context) => {
-            // Corrected: Added type assertion for parent
-           const parent = context.parent as any;
-           if (parent?.itemType === 'dropdown' && parent?.dropdownType === 'scooters' && (!value || value.length === 0)) {
-             return 'At least one item is required for the Scooters dropdown.'
-           }
-           return true
-         }),
+        Rule.custom((value, context) => {
+          const parent = context.parent as any
+          if (
+            parent?.itemType === 'dropdown' &&
+            parent?.dropdownType === 'scooters' &&
+            (!value || (value as any[]).length === 0) // Check if array is empty
+          ) {
+            return 'At least one item is required for the Scooters dropdown.'
+          }
+          return true
+        }),
     }),
     defineField({
       name: 'moreItems',
       title: 'More Dropdown Items',
       type: 'array',
-      of: [{type: 'moreDropdownItem'}],
-       // Corrected: Added type assertion for parent
-      hidden: ({parent}) => (parent as any)?.itemType !== 'dropdown' || (parent as any)?.dropdownType !== 'more',
+      of: [{type: 'moreDropdownItem'}], // Reference the moreDropdownItem object
+      hidden: ({parent}) =>
+        (parent as any)?.itemType !== 'dropdown' || (parent as any)?.dropdownType !== 'more',
       description: 'Add links organized by group/column number for the "More" dropdown.',
-       validation: (Rule) =>
-         Rule.custom((value, context) => {
-            // Corrected: Added type assertion for parent
-           const parent = context.parent as any;
-           if (parent?.itemType === 'dropdown' && parent?.dropdownType === 'more' && (!value || value.length === 0)) {
-             return 'At least one item is required for the More dropdown.'
-           }
-           return true
-         }),
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const parent = context.parent as any
+          if (
+            parent?.itemType === 'dropdown' &&
+            parent?.dropdownType === 'more' &&
+            (!value || (value as any[]).length === 0) // Check if array is empty
+          ) {
+            return 'At least one item is required for the More dropdown.'
+          }
+          return true
+        }),
     }),
   ],
   preview: {
@@ -135,7 +157,10 @@ export default defineType({
       linkType: 'link.linkType',
     },
     prepare({title, itemType, dropdownType, linkType}) {
-      let subtitle = itemType === 'link' ? `Direct Link (Type: ${linkType || 'Not Set'})` : `Dropdown (${dropdownType || '?'})`
+      let subtitle =
+        itemType === 'link'
+          ? `Direct Link (Type: ${linkType || 'Not Set'})`
+          : `Dropdown (${dropdownType || '?'})`
       return {
         title: title || 'Untitled Nav Item',
         subtitle: subtitle,

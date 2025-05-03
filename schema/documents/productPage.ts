@@ -1,152 +1,108 @@
 // schema/documents/productPage.ts
 import {defineField, defineType} from 'sanity'
-import {RocketIcon, HelpCircleIcon} from '@sanity/icons' // Ensure HelpCircleIcon is imported
+import {RocketIcon, HelpCircleIcon} from '@sanity/icons' // Add HelpCircleIcon
 
 export default defineType({
   name: 'productPage',
-  title: 'Product Page',
+  title: 'Product Page (Marketing)', // Clarified Title
   type: 'document',
   icon: RocketIcon,
   groups: [
-    {name: 'hero', title: 'Hero Section', default: true},
-    {name: 'configurator', title: 'Vehicle Configurator'},
-    {name: 'features', title: 'Feature Carousels'},
-    {name: 'specifications', title: 'Technical Specifications'},
-    {name: 'faqs', title: 'FAQ Section'}, // Group for FAQ related fields
-    {name: 'videos', title: 'Video Section'},
-    {name: 'testimonials', title: 'Testimonials'},
+    {name: 'general', title: 'General', default: true},
+    {name: 'content', title: 'Page Content Sections'},
     {name: 'seo', title: 'SEO & Metadata'},
-    // Add other groups as needed, e.g., {name: 'contentSections', title: 'Other Content'}
   ],
   fields: [
-    // Basic Product Information
+    // General Information
     defineField({
       name: 'title',
-      title: 'Product Title',
+      title: 'Page Title',
       type: 'string',
-      description: 'The main name of the product (e.g., KM4000)',
-      // Keep optional as per original
+      group: 'general',
+      description:
+        'The main title for this product marketing page (e.g., "KM4000 - The Silent Warrior").',
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
-      description: 'URL-friendly identifier for the product page',
+      group: 'general',
+      description:
+        'URL for this specific product page (e.g., /km4000). Should match the related vehicle model slug.',
       options: {
         source: 'title',
         maxLength: 96,
+        // Potential enhancement: Add a custom validation to ensure uniqueness
+        // or suggest matching the related bookingVehicle slug if one is linked.
       },
-      // Keep optional as per original
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      // **** Link to the core vehicle data ****
+      name: 'relatedVehicle',
+      title: 'Related Booking Vehicle',
+      type: 'reference',
+      group: 'general',
+      description:
+        'Link this marketing page to the corresponding vehicle defined in "Booking Vehicles". This connects pricing, variants etc.',
+      to: [{type: 'bookingVehicle'}],
+      // Make this required if every product page MUST correspond to a booking vehicle
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'active',
       title: 'Active',
       type: 'boolean',
-      description: 'Whether this product page should be publicly visible',
+      group: 'general',
+      description: 'Whether this product marketing page should be publicly visible.',
       initialValue: true,
     }),
 
-    // Hero Section
+    // Page Content Sections (Using Page Builder approach)
     defineField({
-      name: 'heroSection',
-      title: 'Hero Section',
-      group: 'hero',
-      type: 'heroSection',
-      description: 'The main promotional section at the top of the page',
-    }),
-
-    // Configurator
-    defineField({
-      name: 'configurator',
-      title: 'Vehicle Configurator',
-      group: 'configurator',
-      type: 'configuratorData',
-      description: 'JSON data for the 3D configurator/turntable',
-    }),
-
-    // Feature Carousels (Multiple)
-    defineField({
-      name: 'featureCarousels',
-      title: 'Feature Carousels',
-      group: 'features',
+      name: 'pageBuilder',
+      title: 'Page Content Sections',
       type: 'array',
-      of: [{type: 'featureCarousel'}],
-      description: 'Multiple feature carousels sections',
-    }),
-
-    // Technical Specifications (Using the updated object)
-    defineField({
-      name: 'techSpecs',
-      title: 'Technical Specifications',
-      group: 'specifications', // Assign to the 'specifications' group
-      type: 'techSpecsSection', // Use the updated object type
-      description: 'Detailed specifications organized into groups.',
-    }),
-
-    // --- FAQ Section Fields (Using Global FAQs) ---
-    defineField({
-      name: 'faqSectionTitle',
-      title: 'FAQ Section Title Override',
-      type: 'string',
-      group: 'faqs', // Assign to the 'faqs' group
-      description:
-        'Optional: Title displayed above the FAQ list on this page (e.g., "KM4000 FAQs"). Defaults to "Frequently Asked Questions" if empty.',
-    }),
-    defineField({
-      name: 'referencedFaqs',
-      title: 'Select FAQs for this Page',
-      type: 'array',
-      group: 'faqs', // Assign to the 'faqs' group
-      description:
-        'Choose relevant FAQs from the global library to display on this specific product page.',
+      group: 'content',
+      description: 'Add and arrange content blocks like Hero, Features, Specs, Videos, etc.',
       of: [
+        // Define the specific block types allowed ON PRODUCT PAGES
+        {type: 'heroSection', title: 'Hero Section'},
+        {type: 'featureCarousel', title: 'Feature Carousel'},
+        {type: 'techSpecsSection', title: 'Tech Specs Section'}, // You might fetch specs from relatedVehicle, or define overrides here
+        {type: 'videoSection', title: 'Video Section'},
+        {type: 'testimonialSection', title: 'Testimonial Section'},
+        {type: 'configuratorData', title: '3D Configurator Embed'}, // Keeping this
+        {type: 'blockContent', title: 'Text Block'}, // For general text sections
+        {type: 'ctaBlock', title: 'Call to Action'},
+        {type: 'textWithImageBlock', title: 'Text w/ Image'},
+        // Potentially a dedicated FAQ section object or reference FAQs
+        // Example: Referencing FAQs (ensure faqItem schema exists)
         {
-          type: 'reference',
-          to: [{type: 'faqItem'}], // Reference the global FAQ document type
-          options: {
-            // You can add filters here later if needed, e.g., based on tags
-            // filter: '_type == "faqItem" && "battery" in tags'
-          },
+          type: 'object',
+          name: 'productFaqs',
+          title: 'FAQ Section (Product Specific)',
+          icon: HelpCircleIcon, // Need to import this icon if used
+          fields: [
+            defineField({
+              name: 'titleOverride',
+              title: 'FAQ Section Title Override',
+              type: 'string',
+              description: 'Optional title like "KM4000 FAQs"',
+            }),
+            defineField({
+              name: 'referencedFaqs',
+              title: 'Select FAQs',
+              type: 'array',
+              of: [{type: 'reference', to: [{type: 'faqItem'}]}],
+              validation: (Rule) => Rule.unique(),
+            }),
+          ],
         },
       ],
-      validation: (Rule) => Rule.unique().error('Each FAQ can only be added once to this page.'),
-    }),
-    defineField({
-      name: 'faqAllowMultipleOpen',
-      title: 'Allow Multiple Open FAQs?',
-      type: 'boolean',
-      group: 'faqs', // Assign to the 'faqs' group
-      description: 'Allow users to expand multiple questions at once in the UI.',
-      initialValue: false,
-    }),
-    defineField({
-      name: 'faqInitialOpenIndex',
-      title: 'Initially Open FAQ Index',
-      type: 'number',
-      group: 'faqs', // Assign to the 'faqs' group
-      description:
-        'Index (0=first selected, 1=second selected, etc.) of the FAQ to show open by default. Use -1 or leave empty for none.',
-      initialValue: -1,
-      validation: (Rule) => Rule.integer(),
-    }),
-    // --- End FAQ Section Fields ---
-
-    // Video Section
-    defineField({
-      name: 'videoSection',
-      title: 'Video Section',
-      group: 'videos',
-      type: 'videoSection',
-      description: 'Product video showcase section',
-    }),
-
-    // Testimonial Section
-    defineField({
-      name: 'testimonialSection',
-      title: 'Testimonial Section',
-      group: 'testimonials',
-      type: 'testimonialSection',
-      description: 'Customer reviews and testimonials section',
+      validation: (Rule) =>
+        Rule.required().min(1).error('Product page must have at least one content section.'),
     }),
 
     // SEO & Metadata
@@ -155,21 +111,29 @@ export default defineType({
       title: 'SEO Settings',
       group: 'seo',
       type: 'seoSettings',
-      description: 'Search engine optimization settings for this product page',
+      description: 'Search engine optimization settings for this product page.',
     }),
   ],
   preview: {
     select: {
       title: 'title',
       active: 'active',
-      media: 'heroSection.image', // Use hero image for preview
+      vehicleName: 'relatedVehicle.name', // Get name from linked vehicle
+      media: 'pageBuilder.0.image', // Try to get hero image from first block (adjust path if needed)
     },
-    prepare({title, active, media}) {
+    prepare({title, active, vehicleName, media}) {
+      const subtitle = vehicleName
+        ? `Marketing page for: ${vehicleName}`
+        : active
+          ? 'Status: Active'
+          : 'Status: Inactive'
       return {
         title: title || 'Untitled Product Page',
-        subtitle: active ? 'Status: Active' : 'Status: Inactive',
-        media: media || RocketIcon, // Fallback to icon if no hero image
+        subtitle: subtitle,
+        media: media || RocketIcon, // Fallback icon
       }
     },
   },
 })
+// Import HelpCircleIcon if using the FAQ reference block:
+// import {HelpCircleIcon} from '@sanity/icons'

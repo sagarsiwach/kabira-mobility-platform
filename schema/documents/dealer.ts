@@ -1,4 +1,4 @@
-// apps/cms/schemas/documents/dealer.ts
+// schema/documents/dealer.ts
 import {defineField, defineType} from 'sanity'
 import {PinIcon} from '@sanity/icons'
 import {defaultDealerHours} from '../constants' // Import default hours
@@ -24,20 +24,13 @@ export default defineType({
       group: 'details',
       validation: (Rule) => Rule.required(),
     }),
-    // --- SIMPLIFIED DEALER CODE FIELD ---
     defineField({
       name: 'dealerCode',
       title: 'Dealer Code (Optional)',
-      // Changed back to string
       type: 'string',
       description: 'Optional internal identifier for the dealer (e.g., HELLOEV-1001).',
       group: 'details',
-      // Removed all validation: required(), unique(), regex()
-      // validation: (Rule) => [...] // REMOVED
-      // Removed options block
-      // options: { ... } // REMOVED
     }),
-    // --- END SIMPLIFIED FIELD ---
     defineField({
       name: 'image',
       title: 'Dealer Image',
@@ -47,11 +40,22 @@ export default defineType({
       options: {
         hotspot: true,
       },
+      fields: [
+        // Add alt text field to image
+        defineField({
+          name: 'alt',
+          type: 'string',
+          title: 'Alternative Text',
+          description: 'Important for accessibility. Describe the dealership image.',
+          validation: (Rule) => Rule.required(),
+          isHighlighted: true,
+        }),
+      ],
     }),
     defineField({
       name: 'contact',
       title: 'Contact Information',
-      type: 'contact',
+      type: 'contact', // Using the Contact object type
       group: 'details',
       description: 'How customers can reach the dealership.',
     }),
@@ -77,7 +81,7 @@ export default defineType({
     defineField({
       name: 'address',
       title: 'Address',
-      type: 'address',
+      type: 'address', // Using the Address object type
       group: 'location',
       validation: (Rule) => Rule.required(),
     }),
@@ -101,7 +105,7 @@ export default defineType({
       group: 'hours',
       description:
         'Specify opening and closing times for each day. Defaults to Mon-Sat 9-6, Sun Closed.',
-      of: [{type: 'dealerHours'}],
+      of: [{type: 'dealerHours'}], // Using the DealerHours object type
       initialValue: defaultDealerHours,
       validation: (Rule) => Rule.unique().error('Each day can only be listed once.'),
     }),
@@ -134,11 +138,10 @@ export default defineType({
     },
     prepare({title, dealerCode, city, state, media}) {
       const location = [city, state].filter(Boolean).join(', ')
-      // Handle optional dealerCode in subtitle
       const subtitle = dealerCode ? `${dealerCode} | ${location}` : location
       return {
         title: title || 'Untitled Dealer',
-        subtitle: subtitle,
+        subtitle: subtitle || 'No location info',
         media: media || PinIcon,
       }
     },

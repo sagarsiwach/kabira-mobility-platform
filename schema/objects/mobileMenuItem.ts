@@ -35,12 +35,11 @@ export default defineType({
       title: 'Link Destination',
       type: 'link',
       description: 'Define where this item links to if it\'s a "Direct Link".',
-       // Corrected: Added type assertion for parent
       hidden: ({parent}) => (parent as any)?.itemType !== 'link',
       validation: (Rule) =>
         Rule.custom((value, context) => {
-           // Corrected: Added type assertion for parent and check value structure
-          if ((context.parent as any)?.itemType === 'link' && !(value as any)?._type) {
+          const parent = context.parent as any // Explicit type assertion
+          if (parent?.itemType === 'link' && !(value as any)?._type) {
             return 'A link destination is required for "Direct Link" items.'
           }
           return true
@@ -59,12 +58,11 @@ export default defineType({
         layout: 'dropdown',
       },
       description: 'Select which type of content this submenu will display.',
-       // Corrected: Added type assertion for parent
       hidden: ({parent}) => (parent as any)?.itemType !== 'submenuTrigger',
       validation: (Rule) =>
         Rule.custom((value, context) => {
-           // Corrected: Added type assertion for parent
-          if ((context.parent as any)?.itemType === 'submenuTrigger' && !value) {
+          const parent = context.parent as any // Explicit type assertion
+          if (parent?.itemType === 'submenuTrigger' && !value) {
             return 'Submenu type is required when Item Type is Submenu Trigger.'
           }
           return true
@@ -80,17 +78,17 @@ export default defineType({
           {title: 'Arrow Right', value: 'right'},
           {title: 'Arrow Top Right (External/Link)', value: 'topRight'},
           {title: 'More Horizontal', value: 'more'},
-          {title: 'None', value: ''}
+          {title: 'None', value: ''},
         ],
         layout: 'dropdown',
       },
-       // Corrected: Added type assertion for parent
-      initialValue: (context) => {
-         const parent = context.parent as any; // Assert type
-         if (parent?.itemType === 'submenuTrigger') return 'right';
-         if (parent?.itemType === 'link' && parent?.link?.linkType === 'external') return 'topRight';
-         return '';
-      }
+      initialValue: (parentContext) => {
+        // Use parentContext for initialValue logic
+        const parent = parentContext as any // Assert type
+        if (parent?.itemType === 'submenuTrigger') return 'right'
+        if (parent?.itemType === 'link' && parent?.link?.linkType === 'external') return 'topRight'
+        return ''
+      },
     }),
   ],
   preview: {
@@ -101,11 +99,11 @@ export default defineType({
       icon: 'icon',
     },
     prepare({title, itemType, submenuType, icon}) {
-       const typeLabel = itemType === 'link' ? 'Direct Link' : `Submenu (${submenuType || '?'})`
-       const iconLabel = icon ? ` | Icon: ${icon}` : ''
+      const typeLabel = itemType === 'link' ? 'Direct Link' : `Submenu (${submenuType || '?'})`
+      const iconLabel = icon ? ` | Icon: ${icon}` : ''
       return {
         title: title || 'Untitled Mobile Item',
-        subtitle: `${typeLabel}${iconLabel}`
+        subtitle: `${typeLabel}${iconLabel}`,
       }
     },
   },

@@ -14,8 +14,13 @@ export default defineType({
       type: 'slug',
       description: 'Unique identifier for this variant (e.g., B10-LONG-RANGE). Auto-generated.',
       options: {
-        source: (doc, context) => `${context.parent?.modelCode?.current || 'CODE'}-${doc.title || 'VARIANT'}`, // Generate from model code + title
-        slugify: (input) => input.toUpperCase().replace(/[^A-Z0-9-]+/g, '-'), // Ensure valid format
+        source: (doc, context) => {
+          // Ensure context.parent and its properties exist before accessing them
+          const parentModelCode = context.parent && (context.parent as any).modelCode?.current
+          const title = doc.title || 'VARIANT'
+          return `${parentModelCode || 'CODE'}-${title}`
+        },
+        slugify: (input) => input.toUpperCase().replace(/[^A-Z0-9-]+/g, '-'),
       },
       validation: (Rule) => Rule.required(),
     }),

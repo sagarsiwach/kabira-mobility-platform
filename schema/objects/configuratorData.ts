@@ -1,14 +1,13 @@
 // schema/objects/configuratorData.ts
 import {defineField, defineType} from 'sanity'
-import {DesktopIcon, MobileDeviceIcon, TabletIcon} from '@sanity/icons' // Import relevant icons
+import {DesktopIcon} from '@sanity/icons'
 
 export default defineType({
   name: 'configuratorData',
-  title: 'Configurator Data (Responsive)', // Updated title
+  title: 'Configurator Data (Responsive)',
   type: 'object',
   icon: DesktopIcon,
   groups: [
-    // Use groups for better organization
     {name: 'general', title: 'General Info', default: true},
     {name: 'configLg', title: 'Large Desktop (LG)'},
     {name: 'configMd', title: 'Medium Desktop (MD)'},
@@ -36,14 +35,14 @@ export default defineType({
 
     // --- Large Desktop Config ---
     defineField({
-      name: 'configLg', // Use descriptive names
-      title: 'LG Config Data (> 1199px)', // Specify breakpoint range
+      name: 'configLg',
+      title: 'LG Config Data (> 1199px)',
       type: 'code',
-      group: 'configLg', // Assign to group
+      group: 'configLg',
       description: 'JSON configuration specifically for large desktop screens.',
       options: {
         language: 'json',
-        theme: 'monokai', // Optional: set theme
+        theme: 'monokai',
       },
       validation: (Rule) => Rule.required().error('Large Desktop config is required.'),
     }),
@@ -84,7 +83,7 @@ export default defineType({
   preview: {
     select: {
       title: 'title',
-      hasLg: 'configLg.code', // Check if code exists for preview indication
+      hasLg: 'configLg.code',
       hasMd: 'configMd.code',
       hasTablet: 'configTablet.code',
       hasPhone: 'configPhone.code',
@@ -94,7 +93,7 @@ export default defineType({
       return {
         title: title || 'Responsive Configurator',
         subtitle: `${configured} / 4 Breakpoints Configured`,
-        icon: DesktopIcon, // Keep a general icon
+        icon: DesktopIcon,
       }
     },
   },

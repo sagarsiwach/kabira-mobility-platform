@@ -1,4 +1,4 @@
-import {defineType, defineArrayMember} from 'sanity'
+import {defineType, defineArrayMember, defineField} from 'sanity'
 
 export default defineType({
   title: 'Block Content',
@@ -7,7 +7,7 @@ export default defineType({
   of: [
     defineArrayMember({
       title: 'Block',
-      type: 'block', // The standard text block type
+      type: 'block',
       styles: [
         {title: 'Normal', value: 'normal'},
         {title: 'H1', value: 'h1'},
@@ -28,33 +28,60 @@ export default defineType({
           {title: 'Underline', value: 'underline'},
           {title: 'Strike', value: 'strike-through'},
         ],
-        annotations: [ // For links etc.
+        annotations: [
           {
             title: 'URL',
             name: 'link',
             type: 'object',
             fields: [
-              {
+              defineField({
+                // Use defineField here
                 title: 'URL',
                 name: 'href',
                 type: 'url',
-                validation: Rule => Rule.uri({
-                  scheme: ['http', 'https', 'mailto', 'tel']
-                })
-              },
+                validation: (Rule) =>
+                  Rule.uri({
+                    scheme: ['http', 'https', 'mailto', 'tel'],
+                  }),
+              }),
+              defineField({
+                // Add target blank option
+                title: 'Open in new tab',
+                name: 'blank',
+                type: 'boolean',
+                initialValue: false,
+              }),
             ],
           },
         ],
       },
     }),
-    // Allow images directly in the text editor
     defineArrayMember({
       type: 'image',
       options: {hotspot: true},
+      fields: [
+        defineField({
+          name: 'alt',
+          type: 'string',
+          title: 'Alternative Text',
+          description: 'Important for SEO and accessibility. Describe the image content.',
+          validation: (Rule) => Rule.required(),
+          isHighlighted: true,
+        }),
+        defineField({
+          name: 'caption',
+          type: 'string',
+          title: 'Caption',
+          description: 'Optional caption displayed below the image.',
+        }),
+      ],
     }),
-     // You can add other custom block types here later (e.g., code blocks, videos)
-    // defineArrayMember({
-    //   type: 'code', // Requires installing @sanity/code-input plugin
-    // }),
+    defineArrayMember({
+      type: 'ctaBlock', // Embed CTAs
+      title: 'Call to Action Button',
+    }),
+    // Add other potential block types here if needed later
+    // defineArrayMember({ type: 'videoSection' }),
+    // defineArrayMember({ type: 'featureCarousel' }),
   ],
 })

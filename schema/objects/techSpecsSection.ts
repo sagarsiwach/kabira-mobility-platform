@@ -1,4 +1,4 @@
-// schema/objects/techSpecsSection.ts (Updated)
+// schema/objects/techSpecsSection.ts
 import {defineField, defineType} from 'sanity'
 import {MasterDetailIcon} from '@sanity/icons'
 
@@ -8,7 +8,6 @@ export default defineType({
   type: 'object',
   icon: MasterDetailIcon,
   fields: [
-    // Section Header Fields (Optional)
     defineField({
       name: 'sectionTitle',
       title: 'Overall Section Title',
@@ -22,15 +21,6 @@ export default defineType({
       type: 'string',
       description: 'Optional subheading for the tech specs block.',
     }),
-    // Optional: If you want a main image SPECIFICALLY for the specs section header
-    // defineField({
-    //   name: 'sectionHeaderImage',
-    //   title: 'Section Header Image',
-    //   type: 'image',
-    //   options: { hotspot: true }
-    // }),
-
-    // --- Specification Groups (Performance, Battery, etc.) ---
     defineField({
       name: 'specGroups',
       title: 'Specification Groups',
@@ -51,20 +41,15 @@ export default defineType({
                 'Heading for this group (e.g., "Performance", "Battery", "Colors Available", "Features")',
               validation: (Rule) => Rule.required(),
             }),
-            // --- Items within this Group ---
             defineField({
               name: 'items',
               title: 'Specifications / Items in this Group',
               type: 'array',
               description: 'Add the specific data points for this group.',
-              // Define WHICH specific spec types can be added here:
               of: [
-                {type: 'specKeyValue', title: 'Key/Value Pair (for Range, Perf, Battery etc.)'},
-                {type: 'specColorSwatchDisplay', title: 'Color Swatch (for Colors Available)'},
-                {
-                  type: 'specSimpleListItem',
-                  title: 'Simple List Item (for Connectivity, Features)',
-                },
+                {type: 'specKeyValue', title: 'Key/Value Pair'},
+                {type: 'specColorSwatchDisplay', title: 'Color Swatch'},
+                {type: 'specSimpleListItem', title: 'Simple List Item'},
               ],
               validation: (Rule) => Rule.required().min(1),
             }),
@@ -75,13 +60,10 @@ export default defineType({
               itemCount: 'items.length',
             },
             prepare({title, itemCount = 0}) {
-              // Determine a representative icon based on title maybe? (Advanced)
-              let icon = MasterDetailIcon // Default
-              // Example: if (title?.toLowerCase().includes('color')) icon = DropIcon;
               return {
                 title: title || 'Untitled Spec Group',
                 subtitle: `${itemCount} item${itemCount === 1 ? '' : 's'}`,
-                icon: icon,
+                icon: MasterDetailIcon, // Keep consistent icon
               }
             },
           },
@@ -91,13 +73,12 @@ export default defineType({
     }),
   ],
   preview: {
-    // Preview for the whole techSpecsSection object when used in productPage
     select: {
       title: 'sectionTitle',
       groups: 'specGroups',
     },
     prepare({title, groups}) {
-      const groupCount = groups?.length || 0
+      const groupCount = (groups as any[])?.length || 0
       return {
         title: title || 'Technical Specifications',
         subtitle: `${groupCount} group${groupCount === 1 ? '' : 's'}`,

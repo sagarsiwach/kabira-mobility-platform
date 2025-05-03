@@ -32,8 +32,14 @@ export default defineType({
       title: 'Code',
       type: 'slug',
       description: 'Unique identifier (e.g., B10-HELMET, COMMON-EXTENDED-2Y). Auto-generated.',
-       options: {
-        source: (doc, context) => `${context.parent?.modelCode?.current || 'CODE'}-${doc.title || 'COMPONENT'}`,
+      options: {
+        // Improved source logic to handle potential undefined parent properties gracefully
+        source: (doc, context) => {
+          // Ensure context.parent and its properties exist before accessing them
+          const parentModelCode = context.parent && (context.parent as any).modelCode?.current
+          const title = doc.title || 'COMPONENT'
+          return `${parentModelCode || 'CODE'}-${title}`
+        },
         slugify: (input) => input.toUpperCase().replace(/[^A-Z0-9-]+/g, '-'),
       },
       validation: (Rule) => Rule.required(),

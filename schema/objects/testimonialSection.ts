@@ -1,5 +1,4 @@
 // schema/objects/testimonialSection.ts
-
 import {defineField, defineType} from 'sanity'
 import {UserIcon} from '@sanity/icons'
 
@@ -33,10 +32,14 @@ export default defineType({
           fields: [
             defineField({
               name: 'id',
-              title: 'Testimonial ID',
-              type: 'string',
-              description:
-                'Unique identifier for the testimonial (system will generate if not provided)',
+              title: 'Testimonial ID (Optional)',
+              type: 'slug', // Changed to slug for easier generation
+              description: 'Unique identifier (auto-generates from author name).',
+              options: {
+                source: 'authorName',
+                maxLength: 50,
+                slugify: (input) => input.toLowerCase().replace(/\s+/g, '-').slice(0, 50),
+              },
             }),
             defineField({
               name: 'quote',
@@ -55,21 +58,42 @@ export default defineType({
             }),
             defineField({
               name: 'authorImage',
-              title: 'Author Image',
+              title: 'Author Image (Optional)',
               type: 'image',
               description: 'Photo of the person giving the testimonial',
               options: {
                 hotspot: true,
               },
+              fields: [
+                // Add alt text
+                defineField({
+                  name: 'alt',
+                  type: 'string',
+                  title: 'Alternative Text',
+                  description: 'Important for accessibility. E.g., "Photo of [Author Name]"',
+                  validation: (Rule) => Rule.required(),
+                  isHighlighted: true,
+                }),
+              ],
             }),
             defineField({
               name: 'backgroundImage',
-              title: 'Background Image',
+              title: 'Background Image (Optional)',
               type: 'image',
               description: 'Optional subtle background image for the testimonial card',
               options: {
                 hotspot: true,
               },
+              fields: [
+                // Add alt text
+                defineField({
+                  name: 'alt',
+                  type: 'string',
+                  title: 'Alternative Text',
+                  description: 'Describe the background image.',
+                  isHighlighted: true,
+                }),
+              ],
             }),
           ],
           preview: {
@@ -82,7 +106,7 @@ export default defineType({
               return {
                 title: authorName || 'Anonymous',
                 subtitle: quote ? (quote.length > 50 ? quote.substring(0, 50) + '...' : quote) : '',
-                media: authorImage,
+                media: authorImage || UserIcon,
               }
             },
           },
@@ -91,4 +115,17 @@ export default defineType({
       validation: (Rule) => Rule.required().min(1),
     }),
   ],
+  preview: {
+    select: {
+      title: 'title',
+      testimonialCount: 'testimonials.length',
+    },
+    prepare({title, testimonialCount}) {
+      return {
+        title: title || 'Testimonial Section',
+        subtitle: `${testimonialCount || 0} testimonial(s)`,
+        icon: UserIcon,
+      }
+    },
+  },
 })

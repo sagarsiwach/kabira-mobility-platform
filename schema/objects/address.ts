@@ -1,6 +1,6 @@
 import {defineType, defineField} from 'sanity'
 import {HomeIcon} from '@sanity/icons'
-import {indianStates} from '../constants' // Import the states list
+import {indianStates} from '../constants' // Ensure this path is correct
 
 export default defineType({
   name: 'address',
@@ -64,7 +64,7 @@ export default defineType({
       const location = [city, state, pincode].filter(Boolean).join(', ')
       return {
         title: line1 || 'Address not specified',
-        subtitle: location,
+        subtitle: location || 'No location details',
       }
     },
   },

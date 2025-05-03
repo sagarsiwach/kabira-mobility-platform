@@ -1,4 +1,4 @@
-// schema/documents/faqItem.ts (Modification)
+// schema/documents/faqItem.ts
 import {defineField, defineType} from 'sanity'
 import {HelpCircleIcon} from '@sanity/icons'
 
@@ -17,30 +17,27 @@ export default defineType({
     defineField({
       name: 'answer',
       title: 'Answer',
-      type: 'blockContent',
+      type: 'blockContent', // Use rich text for answers
       validation: (Rule) => Rule.required(),
     }),
-    // --- MODIFIED CATEGORY FIELD ---
     defineField({
       name: 'category',
-      title: 'Category', // Title remains the same
-      type: 'reference', // <-- Changed type to reference
+      title: 'Category',
+      type: 'reference',
       description: 'Assign this FAQ to a category.',
-      to: [{type: 'faqCategory'}], // <-- Points to the faqCategory document type
-      // Make it required if every FAQ must have a category:
-      // validation: Rule => Rule.required()
+      to: [{type: 'faqCategory'}], // Points to the faqCategory document type
+      validation: (Rule) => Rule.required().error('Each FAQ must belong to a category.'),
     }),
-    // --- END MODIFICATION ---
   ],
   preview: {
     select: {
       title: 'question',
-      categoryTitle: 'category.title', // Access the title of the referenced category
+      categoryTitle: 'category.title',
     },
     prepare({title, categoryTitle}) {
       return {
         title: title || 'Untitled FAQ',
-        subtitle: categoryTitle ? `Category: ${categoryTitle}` : 'No Category',
+        subtitle: categoryTitle ? `Category: ${categoryTitle}` : 'No Category Assigned',
       }
     },
   },

@@ -1,6 +1,6 @@
 import {defineType, defineField} from 'sanity'
 import {ClockIcon} from '@sanity/icons'
-import {daysOfWeek} from '../constants' // Import days list
+import {daysOfWeek} from '../constants' // Ensure this path is correct
 
 export default defineType({
   name: 'dealerHours',

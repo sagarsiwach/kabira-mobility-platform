@@ -1,6 +1,5 @@
 import {defineType, defineField} from 'sanity'
 import {DropIcon} from '@sanity/icons'
-// Removed React import if it was accidentally added
 
 export default defineType({
   name: 'colorOption',
@@ -49,10 +48,9 @@ export default defineType({
       const subtitle = colorEnd ? `${colorStart} -> ${colorEnd}` : colorStart
       return {
         title: title,
-        subtitle: subtitle,
-        // media: <div style={{ backgroundColor: colorStart, width: '100%', height: '100%' }} />, // <<--- REMOVED THIS LINE
-        // You could potentially use a standard icon here if needed:
-        // media: DropIcon
+        subtitle: subtitle || 'No color value',
+        // Optional: Render a color swatch using React component if needed for studio preview
+        // media: <div style={{ backgroundColor: colorStart || '#ccc', width: '100%', height: '100%' }} />
       }
     },
   },

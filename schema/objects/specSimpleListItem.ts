@@ -1,6 +1,6 @@
-// schema/objects/specSimpleListItem.ts (NEW)
+// schema/objects/specSimpleListItem.ts
 import {defineField, defineType} from 'sanity'
-import {CheckmarkIcon} from '@sanity/icons' // Or ListIcon
+import {CheckmarkIcon} from '@sanity/icons'
 
 export default defineType({
   name: 'specSimpleListItem',
@@ -33,7 +33,9 @@ export default defineType({
     },
     prepare({title, variants}) {
       const suffix =
-        variants && variants.length > 0 ? ` (${variants.join(', ')})` : ' (All Variants)'
+        variants && (variants as string[]).length > 0
+          ? ` (${variants.join(', ')})`
+          : ' (All Variants)'
       return {
         title: title || 'Untitled Item',
         subtitle: `Simple List Item${suffix}`,

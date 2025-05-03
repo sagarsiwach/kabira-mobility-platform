@@ -1,13 +1,11 @@
 import {defineType, defineField} from 'sanity'
-// Corrected icon import based on the provided list
 import {BillIcon} from '@sanity/icons'
-import {indianStates} from '../constants' // Import states list
+import {indianStates} from '../constants' // Ensure this path is correct
 
 export default defineType({
   name: 'pricingRule',
   title: 'State Pricing Rule',
   type: 'object',
-  // Use the corrected icon name from the list
   icon: BillIcon,
   description: 'Defines the base vehicle price and fees for a specific state.',
   fields: [
@@ -16,7 +14,7 @@ export default defineType({
       title: 'State',
       type: 'string',
       options: {
-        list: indianStates, // Use dropdown for state selection
+        list: indianStates,
         layout: 'dropdown',
       },
       validation: (Rule) => Rule.required(),

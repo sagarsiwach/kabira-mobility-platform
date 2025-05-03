@@ -7,9 +7,9 @@ export default defineType({
   type: 'document',
   icon: BillIcon,
   groups: [
-     { name: 'content', title: 'Content', default: true },
-     { name: 'seo', title: 'SEO' },
-   ],
+    {name: 'content', title: 'Content', default: true},
+    {name: 'seo', title: 'SEO'},
+  ],
   fields: [
     // Content Group
     defineField({
@@ -17,20 +17,21 @@ export default defineType({
       title: 'Title',
       type: 'string',
       group: 'content',
-      description: 'The official title of the legal document (e.g., Privacy Policy, Terms of Service).',
-      validation: Rule => Rule.required(),
+      description:
+        'The official title of the legal document (e.g., Privacy Policy, Terms of Service).',
+      validation: (Rule) => Rule.required(),
     }),
-     defineField({
+    defineField({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
-       options: {
+      options: {
         source: 'title',
         maxLength: 96,
       },
       group: 'content',
       description: 'URL identifier for this page.',
-      validation: Rule => Rule.required(),
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'subtitle',
@@ -46,7 +47,7 @@ export default defineType({
       group: 'content',
       description: 'The date when this document was last officially updated.',
       initialValue: () => new Date().toISOString().split('T')[0],
-       validation: Rule => Rule.required(),
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'body',
@@ -54,13 +55,14 @@ export default defineType({
       type: 'blockContent',
       group: 'content',
       description: 'The full text of the legal document using the rich text editor.',
+      validation: (Rule) => Rule.required(),
     }),
 
     // SEO Group
-     defineField({
+    defineField({
       name: 'seo',
       title: 'SEO Settings',
-      type: 'seoSettings',
+      type: 'seoSettings', // Use the enhanced SEO object
       group: 'seo',
       description: 'Configure search engine appearance for this legal page.',
     }),
@@ -70,9 +72,12 @@ export default defineType({
       title: 'title',
       date: 'lastUpdated',
     },
-     prepare({title, date}) {
-      const dateFormatted = date ? new Date(date).toLocaleDateString() : 'No date';
-      return {title: title || 'Untitled Legal Page', subtitle: `Last Updated: ${dateFormatted}` }
+    prepare({title, date}) {
+      const dateFormatted = date ? new Date(date).toLocaleDateString() : 'No date'
+      return {
+        title: title || 'Untitled Legal Page',
+        subtitle: `Last Updated: ${dateFormatted}`,
+      }
     },
   },
 })

@@ -12,7 +12,7 @@ export default defineType({
       title: 'Name',
       type: 'string',
       description: "Author's full name.",
-      validation: Rule => Rule.required(),
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'slug',
@@ -23,7 +23,7 @@ export default defineType({
         source: 'name',
         maxLength: 96,
       },
-      validation: Rule => Rule.required(),
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'image',
@@ -33,6 +33,17 @@ export default defineType({
       options: {
         hotspot: true,
       },
+      fields: [
+        // Add alt text field to image
+        defineField({
+          name: 'alt',
+          type: 'string',
+          title: 'Alternative Text',
+          description: 'Important for accessibility. E.g., "Photo of [Author Name]"',
+          validation: (Rule) => Rule.required(),
+          isHighlighted: true,
+        }),
+      ],
     }),
     defineField({
       name: 'bio',
@@ -47,7 +58,7 @@ export default defineType({
       title: 'name',
       media: 'image',
     },
-     prepare({title, media}) {
+    prepare({title, media}) {
       return {
         title: title || 'Untitled Author',
         media: media || UserIcon,

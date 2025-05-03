@@ -1,6 +1,6 @@
 // schema/documents/faqCategory.ts
 import {defineField, defineType} from 'sanity'
-import {TagIcon} from '@sanity/icons' // Use TagIcon or similar
+import {TagIcon} from '@sanity/icons'
 
 export default defineType({
   name: 'faqCategory',

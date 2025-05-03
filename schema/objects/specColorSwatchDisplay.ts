@@ -1,12 +1,12 @@
 // schema/objects/specColorSwatchDisplay.ts
 import {defineType, defineField} from 'sanity'
-import {DropIcon} from '@sanity/icons' // Keep the icon for the schema type itself
+import {DropIcon} from '@sanity/icons'
 
 export default defineType({
-  name: 'specColorSwatchDisplay', // Make sure this name is unique if needed
+  name: 'specColorSwatchDisplay',
   title: 'Spec: Color Swatch Display',
   type: 'object',
-  icon: DropIcon, // Icon shown in the schema list
+  icon: DropIcon,
   description: 'Displays a color swatch within the Technical Specifications list.',
   fields: [
     defineField({
@@ -17,9 +17,9 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'color', // Field storing the hex code (e.g., #000000)
+      name: 'color',
       title: 'Color Hex Code',
-      type: 'string', // Use 'string' if just pasting hex, or 'color' if using the color picker plugin
+      type: 'string', // Can use 'color' type if plugin installed
       description: 'The hex code for the color (e.g., "#000000"). Include the #.',
       validation: (Rule) =>
         Rule.required().regex(
@@ -28,7 +28,7 @@ export default defineType({
         ),
     }),
     defineField({
-      name: 'altText', // Still good practice for potential frontend use
+      name: 'altText',
       title: 'Alt Text (Optional)',
       type: 'string',
       description:
@@ -41,22 +41,18 @@ export default defineType({
       description: 'Optional text appended to the name (e.g., "(Glossy)", "(Matte)").',
     }),
   ],
-  // --- SIMPLIFIED PREVIEW ---
   preview: {
     select: {
       name: 'name',
-      color: 'color', // Select the field containing the hex code
+      color: 'color',
       suffix: 'suffix',
     },
     prepare({name, color, suffix}) {
       const displaySuffix = suffix ? ` ${suffix}` : ''
-      // Only return title and subtitle - Sanity will use the default 'icon' for media
       return {
         title: name || 'Untitled Color',
-        subtitle: `${color || 'No hex code'}${displaySuffix}`, // Show the hex code here
-        // media: ...  <--- REMOVED this line entirely
+        subtitle: `${color || 'No hex code'}${displaySuffix}`,
       }
     },
   },
-  // --- END OF SIMPLIFIED PREVIEW ---
 })

@@ -1,4 +1,4 @@
-// schema/objects/specKeyValue.ts (Refined)
+// schema/objects/specKeyValue.ts
 import {defineField, defineType} from 'sanity'
 import {ThListIcon} from '@sanity/icons'
 
@@ -10,14 +10,14 @@ export default defineType({
   fields: [
     defineField({
       name: 'key',
-      title: 'Specification Name / Title', // Clarified Title
+      title: 'Specification Name / Title',
       type: 'string',
       description: 'The name/title of the specification (e.g., "Range (IDC)", "Top Speed")',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'value',
-      title: 'Value / Subtitle', // Clarified Title
+      title: 'Value / Subtitle',
       type: 'string',
       description:
         'The specification value or subtitle text (e.g., "202 km", "90 km/h", "5.14 kWh")',
@@ -28,14 +28,13 @@ export default defineType({
       title: 'Unit (Optional)',
       type: 'string',
       description: 'Optional: Unit of measurement if not included in Value (e.g., "km", "km/h")',
-      // Often better to include unit in the value string for flexibility, e.g., "202 km"
     }),
     defineField({
       name: 'variantCodes',
       title: 'Applicable Variants (Optional)',
       type: 'array',
       description:
-        'If this spec differs per variant, list the relevant Variant Codes (e.g., "KM4000-LR"). Leave empty if it applies to all variants of the model.',
+        'If this spec differs per variant, list the relevant Variant Codes (e.g., "B10-LONG-RANGE"). Leave empty if it applies to all variants of the model.',
       of: [{type: 'string'}],
       options: {layout: 'tags'},
     }),
@@ -50,7 +49,9 @@ export default defineType({
     prepare({key, value, unit, variants}) {
       const val = unit ? `${value} ${unit}` : value
       const suffix =
-        variants && variants.length > 0 ? ` (${variants.join(', ')})` : ' (All Variants)'
+        variants && (variants as string[]).length > 0
+          ? ` (${variants.join(', ')})`
+          : ' (All Variants)'
       return {
         title: key || 'Untitled Spec',
         subtitle: `${val || 'No value'}${suffix}`,
