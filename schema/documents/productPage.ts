@@ -8,12 +8,10 @@ export default defineType({
   type: 'document',
   icon: RocketIcon,
   groups: [
-    {name: 'general', title: 'General', default: true},
-    {name: 'content', title: 'Page Content Sections'},
-    {name: 'seo', title: 'SEO & Metadata'},
+    // ... groups ...
   ],
   fields: [
-    // ... (keep existing fields like title, slug, relatedVehicle, active, pageBuilder, seo) ...
+    // ... fields ...
     defineField({
       name: 'title',
       title: 'Page Title',
@@ -101,34 +99,25 @@ export default defineType({
     }),
   ],
   preview: {
+    // TEMPORARILY SIMPLIFY SELECT
     select: {
       title: 'title',
       active: 'active',
       vehicleName: 'relatedVehicle.name',
-      // Select the necessary fields from pageBuilder instead of the complex path
-      pageBuilder: 'pageBuilder[]{_type, image{asset}}',
-      // If you need configurator image later, select it similarly:
-      // configuratorData: 'pageBuilder[_type=="configuratorData"][0]{posterImage{asset}}',
+      // pageBuilder: 'pageBuilder', // Temporarily comment out pageBuilder selection
     },
-    prepare({title, active, vehicleName, pageBuilder /*, configuratorData*/}) {
+    // Update prepare to match the simplified select
+    prepare({title, active, vehicleName /* Remove pageBuilder */}) {
       const subtitle = vehicleName
         ? `Marketing page for: ${vehicleName}`
         : active
           ? 'Status: Active'
           : 'Status: Inactive'
 
-      // Find the hero section image within the prepare function
-      const heroSection = (pageBuilder || []).find((block) => block?._type === 'heroSection')
-      const mediaAsset = heroSection?.image?.asset
-
-      // If using configurator image fallback:
-      // const configuratorAsset = configuratorData?.posterImage?.asset;
-
       return {
         title: title || 'Untitled Product Page',
         subtitle: subtitle,
-        // Use the found asset, fallback to icon
-        media: mediaAsset /*|| configuratorAsset*/ || RocketIcon,
+        media: RocketIcon, // Just use the fallback icon for now
       }
     },
   },
