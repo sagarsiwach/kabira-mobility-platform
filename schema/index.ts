@@ -50,6 +50,7 @@ import testimonialSection from './objects/testimonialSection'
 import textWithImageBlock from './objects/textWithImageBlock'
 import variant from './objects/variant'
 import videoSection from './objects/videoSection'
+import gallerySection from './objects/gallerySection'
 
 export const schemaTypes = [
   // Documents
@@ -96,6 +97,7 @@ export const schemaTypes = [
   specColorSwatchDisplay,
   specKeyValue,
   specSimpleListItem,
+  gallerySection,
   techSpecsSection,
   testimonialSection,
   textWithImageBlock,

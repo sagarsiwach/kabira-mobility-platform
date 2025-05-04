@@ -1,10 +1,10 @@
 // schema/documents/productPage.ts
 import {defineField, defineType} from 'sanity'
-import {RocketIcon, HelpCircleIcon} from '@sanity/icons' // Add HelpCircleIcon
+import {RocketIcon, HelpCircleIcon, ImagesIcon} from '@sanity/icons'
 
 export default defineType({
   name: 'productPage',
-  title: 'Product Page (Marketing)', // Clarified Title
+  title: 'Product Page (Marketing)',
   type: 'document',
   icon: RocketIcon,
   groups: [
@@ -13,7 +13,7 @@ export default defineType({
     {name: 'seo', title: 'SEO & Metadata'},
   ],
   fields: [
-    // General Information
+    // ... (keep existing fields like title, slug, relatedVehicle, active, pageBuilder, seo) ...
     defineField({
       name: 'title',
       title: 'Page Title',
@@ -33,21 +33,17 @@ export default defineType({
       options: {
         source: 'title',
         maxLength: 96,
-        // Potential enhancement: Add a custom validation to ensure uniqueness
-        // or suggest matching the related bookingVehicle slug if one is linked.
       },
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      // **** Link to the core vehicle data ****
       name: 'relatedVehicle',
       title: 'Related Booking Vehicle',
       type: 'reference',
       group: 'general',
       description:
-        'Link this marketing page to the corresponding vehicle defined in "Booking Vehicles". This connects pricing, variants etc.',
+        'Link this marketing page to the corresponding vehicle defined in "Booking Vehicles".',
       to: [{type: 'bookingVehicle'}],
-      // Make this required if every product page MUST correspond to a booking vehicle
       validation: (Rule) => Rule.required(),
     }),
     defineField({
@@ -58,8 +54,6 @@ export default defineType({
       description: 'Whether this product marketing page should be publicly visible.',
       initialValue: true,
     }),
-
-    // Page Content Sections (Using Page Builder approach)
     defineField({
       name: 'pageBuilder',
       title: 'Page Content Sections',
@@ -67,29 +61,23 @@ export default defineType({
       group: 'content',
       description: 'Add and arrange content blocks like Hero, Features, Specs, Videos, etc.',
       of: [
-        // Define the specific block types allowed ON PRODUCT PAGES
         {type: 'heroSection', title: 'Hero Section'},
         {type: 'featureCarousel', title: 'Feature Carousel'},
-        {type: 'techSpecsSection', title: 'Tech Specs Section'}, // You might fetch specs from relatedVehicle, or define overrides here
+        {type: 'techSpecsSection', title: 'Tech Specs Section'},
         {type: 'videoSection', title: 'Video Section'},
         {type: 'testimonialSection', title: 'Testimonial Section'},
-        {type: 'configuratorData', title: '3D Configurator Embed'}, // Keeping this
-        {type: 'blockContent', title: 'Text Block'}, // For general text sections
-        {type: 'ctaBlock', title: 'Call to Action'},
-        {type: 'textWithImageBlock', title: 'Text w/ Image'},
-        // Potentially a dedicated FAQ section object or reference FAQs
-        // Example: Referencing FAQs (ensure faqItem schema exists)
+        {type: 'gallerySection', title: 'Gallery Section', icon: ImagesIcon},
+        {type: 'configuratorData', title: '3D Configurator Embed'},
         {
           type: 'object',
           name: 'productFaqs',
           title: 'FAQ Section (Product Specific)',
-          icon: HelpCircleIcon, // Need to import this icon if used
+          icon: HelpCircleIcon,
           fields: [
             defineField({
               name: 'titleOverride',
               title: 'FAQ Section Title Override',
               type: 'string',
-              description: 'Optional title like "KM4000 FAQs"',
             }),
             defineField({
               name: 'referencedFaqs',
@@ -104,8 +92,6 @@ export default defineType({
       validation: (Rule) =>
         Rule.required().min(1).error('Product page must have at least one content section.'),
     }),
-
-    // SEO & Metadata
     defineField({
       name: 'seo',
       title: 'SEO Settings',
@@ -118,22 +104,32 @@ export default defineType({
     select: {
       title: 'title',
       active: 'active',
-      vehicleName: 'relatedVehicle.name', // Get name from linked vehicle
-      media: 'pageBuilder.0.image', // Try to get hero image from first block (adjust path if needed)
+      vehicleName: 'relatedVehicle.name',
+      // Select the necessary fields from pageBuilder instead of the complex path
+      pageBuilder: 'pageBuilder[]{_type, image{asset}}',
+      // If you need configurator image later, select it similarly:
+      // configuratorData: 'pageBuilder[_type=="configuratorData"][0]{posterImage{asset}}',
     },
-    prepare({title, active, vehicleName, media}) {
+    prepare({title, active, vehicleName, pageBuilder /*, configuratorData*/}) {
       const subtitle = vehicleName
         ? `Marketing page for: ${vehicleName}`
         : active
           ? 'Status: Active'
           : 'Status: Inactive'
+
+      // Find the hero section image within the prepare function
+      const heroSection = (pageBuilder || []).find((block) => block?._type === 'heroSection')
+      const mediaAsset = heroSection?.image?.asset
+
+      // If using configurator image fallback:
+      // const configuratorAsset = configuratorData?.posterImage?.asset;
+
       return {
         title: title || 'Untitled Product Page',
         subtitle: subtitle,
-        media: media || RocketIcon, // Fallback icon
+        // Use the found asset, fallback to icon
+        media: mediaAsset /*|| configuratorAsset*/ || RocketIcon,
       }
     },
   },
 })
-// Import HelpCircleIcon if using the FAQ reference block:
-// import {HelpCircleIcon} from '@sanity/icons'
