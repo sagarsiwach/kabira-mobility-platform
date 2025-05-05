@@ -3,6 +3,9 @@ import {defineType, defineField} from 'sanity'
 import {RocketIcon} from '@sanity/icons'
 import {indianStates} from '../constants' // Make sure constants path is correct
 
+// Use the same consistent API version as in sanity.config.ts
+const apiVersionForValidation = '2024-03-15' // <<< ADDED constant for clarity
+
 export default defineType({
   name: 'vehicle', // Unified name
   title: 'Vehicle', // Unified title
@@ -42,10 +45,11 @@ export default defineType({
             .toLowerCase()
             .replace(/\s+/g, '-')
             .replace(/[^a-z0-9-]/g, ''),
-        // Add isUnique check function here if needed
+        // --- Uniqueness Check for modelCode ---
         isUnique: async (value, context) => {
           if (!value) return true
-          const client = context.getClient({apiVersion: '2023-01-01'}) // Use appropriate API version
+          // Use the defined API version for the client
+          const client = context.getClient({apiVersion: apiVersionForValidation}) // <<< CHANGED: Use consistent apiVersion
           const id = context.document?._id.replace(/^drafts\./, '')
           const params = {draft: `drafts.${id}`, published: id, modelCode: value}
           // Ensure query matches your unique constraint logic for modelCode
@@ -53,7 +57,7 @@ export default defineType({
           try {
             return await client.fetch(query, params)
           } catch (error) {
-            console.error('Uniqueness check failed (modelCode):', error)
+            console.error('Uniqueness check failed (vehicle modelCode):', error) // Added type info
             return false // Fail validation on error
           }
         },
@@ -71,17 +75,18 @@ export default defineType({
       options: {
         source: 'name',
         maxLength: 96,
-        // Add isUnique check function here if needed
+        // --- Uniqueness Check for slug ---
         isUnique: async (value, context) => {
           if (!value) return true
-          const client = context.getClient({apiVersion: '2023-01-01'})
+          // Use the defined API version for the client
+          const client = context.getClient({apiVersion: apiVersionForValidation}) // <<< CHANGED: Use consistent apiVersion
           const id = context.document?._id.replace(/^drafts\./, '')
           const params = {draft: `drafts.${id}`, published: id, slug: value}
           const query = `!defined(*[_type == 'vehicle' && !(_id in [$draft, $published]) && slug.current == $slug][0]._id)`
           try {
             return await client.fetch(query, params)
           } catch (error) {
-            console.error('Uniqueness check failed (slug):', error)
+            console.error('Uniqueness check failed (vehicle slug):', error) // Added type info
             return false
           }
         },
@@ -150,9 +155,9 @@ export default defineType({
         Rule.required().min(1).error('At least one variant must be defined.'),
         Rule.custom((variants) => {
           if (!variants || variants.length === 0) return true
-          const defaultVariants = variants.filter((v) => v?.isDefault)
+          const defaultVariants = variants.filter((v: any) => v?.isDefault) // Added type hint
           if (defaultVariants.length !== 1) return 'Exactly one variant must be marked as default.'
-          const codes = variants.map((v) => v?.code?.current).filter(Boolean)
+          const codes = variants.map((v: any) => v?.code?.current).filter(Boolean) // Added type hint
           if (new Set(codes).size !== codes.length) return 'Variant codes must be unique.'
           return true
         }),
@@ -169,9 +174,9 @@ export default defineType({
         Rule.required().min(1).error('At least one color must be defined.'),
         Rule.custom((colors) => {
           if (!colors || colors.length === 0) return true
-          const defaultColors = colors.filter((c) => c?.isDefault)
+          const defaultColors = colors.filter((c: any) => c?.isDefault) // Added type hint
           if (defaultColors.length !== 1) return 'Exactly one color must be marked as default.'
-          const names = colors.map((c) => c?.name).filter(Boolean)
+          const names = colors.map((c: any) => c?.name).filter(Boolean) // Added type hint
           if (new Set(names).size !== names.length) return 'Color names must be unique.'
           return true
         }),
@@ -228,7 +233,7 @@ export default defineType({
       description:
         'Define base Ex-Showroom price and required fees per state. States must be unique.',
       validation: (Rule) => [
-        Rule.required().min(1),
+        Rule.required().min(1).error('At least one state pricing rule is required.'), // Added more specific error
         Rule.unique().error('Each state can only have one pricing rule.'),
       ],
     }),
@@ -240,7 +245,7 @@ export default defineType({
       group: 'pricingBooking',
       description:
         'Select ALL states where this vehicle is available for booking/purchase. Drives filtering.',
-      options: {list: indianStates}, // Use constants
+      options: {list: indianStates.map((state) => state.value)}, // Use constants, map to values if needed
       validation: (Rule) =>
         Rule.required().min(1).error('Must specify at least one state where available.'),
     }),
@@ -249,8 +254,9 @@ export default defineType({
       title: 'Base Price (₹) - Fallback',
       type: 'number',
       group: 'pricingBooking',
-      hidden: true,
-      description: 'DEPRECATED? Use State Pricing rules instead.',
+      hidden: true, // Keep hidden
+      readOnly: true, // Mark as read-only to discourage use
+      description: 'DEPRECATED. Use State Pricing rules instead.',
     }),
     defineField({
       name: 'bookingAmount',
@@ -288,19 +294,22 @@ export default defineType({
     // --- Marketing Page & SEO Group ---
     defineField({
       name: 'linkedProductPage',
-      title: 'Primary Marketing Page',
-      type: 'string', // Changed from 'reference' to 'string'
+      title: 'Primary Marketing Page (Product Item)', // Clarified title
+      type: 'reference', // Changed from 'string' back to 'reference' - this is better practice
+      to: [{type: 'productItem'}], // Link to the Product Item document
       group: 'marketingSeo',
       description:
-        'Link to the main Product Page that markets this vehicle. Used for cross-linking.',
+        'Link to the main Product Page document that markets this vehicle. Used for cross-linking.',
+      // Optional: Add validation to make it required if needed
+      // validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'vehiclePageSeo',
-      title: 'SEO (for /vehicles/{slug} page)',
+      title: 'SEO (for this specific Vehicle Data)', // Clarified title
       type: 'seoSettings',
       group: 'marketingSeo',
       description:
-        'SEO settings ONLY if this vehicle has its own dedicated page (e.g., /vehicles/km4000). Usually, the primary Product Page handles SEO.',
+        'SEO settings ONLY if this Vehicle document itself has a dedicated public page (rare). Usually, the linked "Product Item" handles the main SEO.',
     }),
   ],
   preview: {
