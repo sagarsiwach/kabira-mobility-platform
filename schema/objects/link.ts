@@ -1,4 +1,4 @@
-// schema/objects/link.ts
+// schema/objects/link.ts (Simplified Version - REPLACE content)
 import {defineField, defineType} from 'sanity'
 import {LinkIcon} from '@sanity/icons'
 
@@ -14,42 +14,14 @@ export default defineType({
       type: 'string',
       options: {
         list: [
-          {title: 'Internal Page/Document', value: 'internal'},
           {title: 'External URL', value: 'external'},
-          {title: 'Simple Path', value: 'path'},
+          {title: 'Internal Path', value: 'path'}, // Renamed for clarity
         ],
         layout: 'radio',
         direction: 'horizontal',
       },
-      initialValue: 'internal',
+      initialValue: 'path',
       validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'internalReference',
-      title: 'Internal Link Target',
-      type: 'reference',
-      description:
-        "Link to another document within Sanity. The URL will be generated based on the linked document's slug.",
-      to: [
-        {type: 'productPage'},
-        {type: 'post'},
-        {type: 'category'},
-        {type: 'legalPage'},
-        {type: 'genericPage'},
-        {type: 'pressRelease'},
-        {type: 'faqCategory'},
-        {type: 'author'},
-        {type: 'bookingVehicle'},
-        {type: 'dealer'},
-      ],
-      hidden: ({parent}) => (parent as any)?.linkType !== 'internal',
-      validation: (Rule) =>
-        Rule.custom((value, context) => {
-          if ((context.parent as any)?.linkType === 'internal' && !value) {
-            return 'An internal link target is required.'
-          }
-          return true
-        }),
     }),
     defineField({
       name: 'externalUrl',
@@ -59,72 +31,55 @@ export default defineType({
       hidden: ({parent}) => (parent as any)?.linkType !== 'external',
       validation: (Rule) =>
         Rule.custom((value, context) => {
-          if ((context.parent as any)?.linkType === 'external' && !value) {
-            return 'An external URL is required.'
+          if ((context.parent as any)?.linkType === 'external') {
+            if (!value) return 'An external URL is required.'
+            // Apply URI validation only if it's an external link AND has a value
+            try {
+              Rule.uri({
+                scheme: ['http', 'https'],
+                allowRelative: false,
+              })(value)
+              return true // Validation passes
+            } catch (err: any) {
+              return err.message // Return validation error message
+            }
           }
-          return true
-        }).uri({
-          scheme: ['http', 'https'],
-          allowRelative: false,
+          return true // Pass validation if not external or no value yet
         }),
     }),
     defineField({
       name: 'path',
-      title: 'Simple Path',
+      title: 'Internal Path',
       type: 'string',
       description:
-        'Use for simple, fixed paths like "/book", "/dealers", "/contact". Start with a forward slash "/".',
+        'Enter the relative path for internal pages (e.g., "/book", "/dealers", "/products/km4000"). MUST start with a forward slash "/".',
       hidden: ({parent}) => (parent as any)?.linkType !== 'path',
       validation: (Rule) =>
         Rule.custom((value, context) => {
           if ((context.parent as any)?.linkType === 'path') {
-            if (!value) return 'A path is required.'
+            if (!value) return 'An internal path is required.'
             if (!value.startsWith('/')) return 'Path must start with a forward slash ("/").'
           }
           return true
         }),
     }),
-    defineField({
-      name: 'labelOverride',
-      title: 'Label Override (Optional)',
-      type: 'string',
-      description:
-        'If linking internally, you can override the automatically generated label (e.g., the document title) with this text.',
-      hidden: ({parent}) => (parent as any)?.linkType !== 'internal',
-    }),
   ],
   preview: {
     select: {
       linkType: 'linkType',
-      internalTitle: 'internalReference.title',
-      internalName: 'internalReference.name',
-      internalSlug: 'internalReference.slug.current',
       externalUrl: 'externalUrl',
       path: 'path',
-      labelOverride: 'labelOverride',
     },
-    prepare({
-      linkType,
-      internalTitle,
-      internalName,
-      internalSlug,
-      externalUrl,
-      path,
-      labelOverride,
-    }) {
-      let title = 'Link (Not configured)'
-      let subtitle = ''
+    prepare({linkType, externalUrl, path}) {
+      let title = 'Link'
+      let subtitle = 'Not configured'
 
-      if (linkType === 'internal') {
-        const displayTitle = labelOverride || internalName || internalTitle || 'Linked Document'
-        title = `🔗 Internal: ${displayTitle}`
-        subtitle = internalSlug ? `Slug: /${internalSlug}` : 'No slug found on linked item'
-      } else if (linkType === 'external') {
-        title = `🔗 External: ${externalUrl || 'No URL'}`
-        subtitle = externalUrl || ''
+      if (linkType === 'external') {
+        title = `🔗 External`
+        subtitle = externalUrl || 'No URL'
       } else if (linkType === 'path') {
-        title = `🔗 Path: ${path || 'No Path'}`
-        subtitle = path || ''
+        title = `🔗 Internal Path`
+        subtitle = path || 'No Path'
       }
       return {title, subtitle}
     },

@@ -1,4 +1,4 @@
-// schema/singletons/homePage.ts
+// schema/singletons/homePage.ts (CORRECTED)
 import {defineField, defineType} from 'sanity'
 import {HomeIcon} from '@sanity/icons'
 
@@ -20,6 +20,7 @@ export default defineType({
       description: 'For internal reference in the CMS.',
       initialValue: 'Home Page',
       readOnly: true,
+      // group: 'hero', // No need to group this internal title
     }),
 
     // Hero Section Group
@@ -49,7 +50,10 @@ export default defineType({
       type: 'array',
       group: 'content',
       description: 'Select vehicle models to feature on the homepage.',
-      of: [{type: 'reference', to: [{type: 'bookingVehicle'}]}], // Updated to bookingVehicle
+      of: [
+        // --- FIX HERE ---
+        {type: 'reference', to: [{type: 'vehicle'}]}, // Reference the consolidated 'vehicle' type
+      ],
       validation: (Rule) => Rule.unique().max(4).warning('Suggest featuring 3-4 vehicles.'),
     }),
     defineField({
@@ -65,7 +69,10 @@ export default defineType({
         {type: 'testimonialSection', title: 'Testimonials Block'},
         {type: 'ctaBlock', title: 'Call to Action'},
         {type: 'textWithImageBlock', title: 'Text w/ Image'},
-        // Add other relevant block types
+        // Add other relevant block types like gallerySection, downloadList etc.
+        {type: 'gallerySection', title: 'Image Gallery'},
+        {type: 'downloadList', title: 'Download List'},
+        {type: 'faqBlock', title: 'FAQ Block'},
       ],
     }),
 

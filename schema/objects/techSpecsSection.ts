@@ -1,23 +1,25 @@
 // schema/objects/techSpecsSection.ts
 import {defineField, defineType} from 'sanity'
-import {MasterDetailIcon} from '@sanity/icons'
+import {MasterDetailIcon} from '@sanity/icons' // Or ListBulletIcon if preferred
 
 export default defineType({
   name: 'techSpecsSection',
   title: 'Technical Specifications Section',
   type: 'object',
   icon: MasterDetailIcon,
+  description:
+    'A block for displaying grouped technical specifications, pulled from the linked Vehicle.',
   fields: [
     defineField({
       name: 'sectionTitle',
-      title: 'Overall Section Title',
+      title: 'Overall Section Title (Optional)',
       type: 'string',
       description:
         'Optional heading for the entire tech specs block on the page (e.g., "KM4000 Specifications").',
     }),
     defineField({
       name: 'sectionSubtitle',
-      title: 'Overall Section Subtitle',
+      title: 'Overall Section Subtitle (Optional)',
       type: 'string',
       description: 'Optional subheading for the tech specs block.',
     }),
@@ -26,7 +28,7 @@ export default defineType({
       title: 'Specification Groups',
       type: 'array',
       description:
-        'Organize specifications into logical groups (e.g., Performance, Battery, Colors). Add groups as needed.',
+        'Organize specifications into logical groups (e.g., Performance, Battery, Dimensions). Add groups as needed.',
       of: [
         {
           type: 'object',
@@ -45,11 +47,12 @@ export default defineType({
               name: 'items',
               title: 'Specifications / Items in this Group',
               type: 'array',
-              description: 'Add the specific data points for this group.',
+              description:
+                'Add the specific data points for this group. Use the "Applicable Variants" field within each item if a spec is variant-specific.',
               of: [
                 {type: 'specKeyValue', title: 'Key/Value Pair'},
-                {type: 'specColorSwatchDisplay', title: 'Color Swatch'},
-                {type: 'specSimpleListItem', title: 'Simple List Item'},
+                {type: 'specColorSwatchDisplay', title: 'Color Swatch'}, // Typically not variant-specific, but possible
+                {type: 'specSimpleListItem', title: 'Simple Feature/List Item'},
               ],
               validation: (Rule) => Rule.required().min(1),
             }),
@@ -63,7 +66,7 @@ export default defineType({
               return {
                 title: title || 'Untitled Spec Group',
                 subtitle: `${itemCount} item${itemCount === 1 ? '' : 's'}`,
-                icon: MasterDetailIcon, // Keep consistent icon
+                icon: MasterDetailIcon,
               }
             },
           },
@@ -80,7 +83,7 @@ export default defineType({
     prepare({title, groups}) {
       const groupCount = (groups as any[])?.length || 0
       return {
-        title: title || 'Technical Specifications',
+        title: title || 'Technical Specifications Section',
         subtitle: `${groupCount} group${groupCount === 1 ? '' : 's'}`,
         icon: MasterDetailIcon,
       }

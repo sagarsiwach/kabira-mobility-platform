@@ -1,40 +1,49 @@
-// sanity.structure.ts
+// sanity.structure.ts (CORRECTED HELPER FUNCTION)
 import {StructureBuilder} from 'sanity/structure'
 import {
-  CogIcon,
-  PinIcon,
-  RocketIcon,
-  DocumentIcon,
-  ComposeIcon,
-  DocumentTextIcon,
-  TagIcon,
-  UserIcon,
-  HelpCircleIcon,
-  BillIcon,
-  HomeIcon,
-  MenuIcon,
-  CalendarIcon,
+  CogIcon, // Settings
+  PinIcon, // Dealer
+  RocketIcon, // Vehicle, Product Page
+  DocumentIcon, // Generic Page
+  ComposeIcon, // Blog
+  DocumentTextIcon, // Post, Other Content
+  TagIcon, // Category
+  UserIcon, // Author
+  HelpCircleIcon, // FAQ
+  BillIcon, // Legal, Press Release
+  HomeIcon, // Homepage
+  MenuIcon, // Navigation
 } from '@sanity/icons'
 import React from 'react'
 
-// Helper function to create singleton document nodes
+/**
+ * Helper function to create singleton document list items
+ * Ensures a consistent ID and prevents creation of multiple instances.
+ */
 const singletonListItem = (
   S: StructureBuilder,
   typeName: string,
   title?: string,
   icon?: React.ComponentType<any>,
-) =>
-  S.listItem()
+) => {
+  // --- FIX HERE: Use a valid JavaScript variable name ---
+  const documentId = typeName // Use the type name as the document ID for singletons
+
+  return S.listItem()
     .title(title || typeName)
-    .id(typeName)
-    .icon(icon)
+    .id(typeName) // Use typeName as the unique ID for this list item
+    .icon(icon || DocumentIcon) // Default icon if none provided
     .child(
       S.document()
         .schemaType(typeName)
-        .documentId(typeName)
+        .documentId(documentId) // Explicitly set the document ID using the corrected variable
         .title(title || typeName),
     )
+}
 
+/**
+ * Defines the main structure of the Sanity Studio's desk tool.
+ */
 export const structure = (S: StructureBuilder) =>
   S.list()
     .title('Kabira Mobility CMS')
@@ -48,12 +57,12 @@ export const structure = (S: StructureBuilder) =>
             .title('Configuration')
             .items([
               singletonListItem(S, 'siteSettings', 'Global Site Settings', CogIcon),
-              singletonListItem(S, 'navigationSettings', 'Navigation Menus', MenuIcon),
+              singletonListItem(S, 'navigationSettings', 'Navigation Setup', MenuIcon),
             ]),
         ),
       S.divider(),
 
-      // --- Section 2: Website Pages (including Product Pages) ---
+      // --- Section 2: Website Pages ---
       S.listItem()
         .title('Website Pages')
         .icon(DocumentIcon)
@@ -68,23 +77,17 @@ export const structure = (S: StructureBuilder) =>
               singletonListItem(S, 'faqPage', 'FAQ Page', HelpCircleIcon),
               singletonListItem(S, 'blogPage', 'Blog Listing Page', ComposeIcon),
               S.divider(),
-              S.documentTypeListItem('genericPage')
-                .title('Standard Pages (About, etc)')
-                .icon(DocumentIcon),
+              S.documentTypeListItem('genericPage').title('Standard Pages').icon(DocumentIcon),
               S.documentTypeListItem('legalPage').title('Legal Pages').icon(BillIcon),
             ]),
         ),
       S.divider(),
 
-      // --- Section 3: Booking (renamed from Vehicles & Data) ---
+      // --- Section 3: Vehicle Data ---
       S.listItem()
-        .title('Booking')
-        .icon(CalendarIcon)
-        .child(
-          S.list()
-            .title('Manage Bookings')
-            .items([S.documentTypeListItem('bookingVehicle').title('Vehicles').icon(RocketIcon)]),
-        ),
+        .title('Vehicles')
+        .icon(RocketIcon)
+        .child(S.documentTypeList('vehicle').title('Manage Vehicles')),
       S.divider(),
 
       // --- Section 4: Blog ---

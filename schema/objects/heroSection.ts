@@ -1,6 +1,6 @@
-// schema/objects/heroSection.ts
+// schema/objects/heroSection.ts (CORRECTED)
 import {defineField, defineType} from 'sanity'
-import {ImageIcon} from '@sanity/icons'
+import {ImageIcon} from '@sanity/icons' // Or another relevant icon
 
 export default defineType({
   name: 'heroSection',
@@ -8,117 +8,96 @@ export default defineType({
   type: 'object',
   icon: ImageIcon,
   fields: [
+    // Field 0
     defineField({
-      name: 'title', // Adding title field as discussed
-      title: 'Hero Title',
-      type: 'string',
-      description: 'The main headline for the hero section (e.g., the product name).',
-      validation: (Rule) => Rule.required(),
+      name: 'titleOverride',
+      title: 'Hero Title Override (Optional)',
+      type: 'string', // <-- TYPE IS PRESENT
+      description: 'Optional: Override the main headline. Defaults to the linked Vehicle Name.',
     }),
+    // Field 1
     defineField({
       name: 'subtitle',
       title: 'Subtitle',
-      type: 'string',
+      type: 'string', // <-- TYPE IS PRESENT
       description: 'Secondary text that appears below the main title.',
     }),
+    // Field 2
     defineField({
       name: 'image',
       title: 'Hero Image',
-      type: 'image',
-      description: 'Main product image shown in the hero section.',
-      options: {
-        hotspot: true,
-      },
+      type: 'image', // <-- TYPE IS PRESENT
+      description: 'Main background image for the hero section. Alt text required.',
+      options: {hotspot: true},
       fields: [
-        // Add alt text
         defineField({
           name: 'alt',
           type: 'string',
           title: 'Alternative Text',
-          description: 'Important for SEO and accessibility.',
-          validation: (Rule) => Rule.required(),
+          validation: (Rule) => Rule.required().error('Hero image alt text is required.'),
           isHighlighted: true,
         }),
       ],
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().error('Hero image is required.'),
     }),
+    // Field 3
+    defineField({
+      name: 'keySpecsSource',
+      title: 'Key Specs Source',
+      type: 'string', // <-- TYPE IS PRESENT
+      options: {
+        list: [
+          {title: 'Manually Entered Here', value: 'manual'},
+          {title: 'Pull from Linked Vehicle (Default - Not Yet Implemented)', value: 'auto'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'manual',
+      description: 'Choose how to populate key specs. (Auto-pull requires frontend logic)',
+    }),
+    // Field 4 (keySpecs array itself)
     defineField({
       name: 'keySpecs',
-      title: 'Key Specifications',
-      type: 'array',
+      title: 'Key Specifications (Manual Entry)',
+      type: 'array', // <-- TYPE IS PRESENT
+      hidden: ({parent}) => parent?.keySpecsSource !== 'manual',
       of: [
         {
-          type: 'object',
+          type: 'object', // Type for array item
           name: 'keySpec',
           fields: [
+            // Fields for the object *inside* the array
             defineField({
               name: 'name',
-              title: 'Specification Name',
+              title: 'Spec Name',
               type: 'string',
-              description: 'The name of the specification (e.g., "Range")',
               validation: (Rule) => Rule.required(),
             }),
             defineField({
               name: 'value',
-              title: 'Value',
+              title: 'Spec Value',
               type: 'string',
-              description: 'The numerical or text value (e.g., "270")',
               validation: (Rule) => Rule.required(),
             }),
-            defineField({
-              name: 'unit',
-              title: 'Unit of Measurement',
-              type: 'string',
-              description: 'The unit for the value (e.g., "km", "hp", etc.)',
-            }),
+            defineField({name: 'unit', title: 'Unit (Optional)', type: 'string'}),
           ],
-          preview: {
-            select: {
-              name: 'name',
-              value: 'value',
-              unit: 'unit',
-            },
-            prepare({name, value, unit}) {
-              return {
-                title: name || 'Unnamed Spec',
-                subtitle: unit ? `${value} ${unit}` : value,
-              }
-            },
-          },
         },
       ],
-      validation: (Rule) => Rule.max(3).warning('Consider limiting to 3 key specs for best layout'),
+      validation: (Rule) => Rule.max(3).warning('Limit to 3 key specs.'),
     }),
+    // Field 5
     defineField({
-      // Adding optional CTA button
       name: 'cta',
       title: 'Call to Action (Optional)',
-      type: 'object',
-      fields: [
-        defineField({
-          name: 'label',
-          title: 'Button Label',
-          type: 'string',
-          validation: (Rule) => Rule.required(),
-        }),
-        defineField({
-          name: 'link',
-          title: 'Button Link',
-          type: 'link',
-          validation: (Rule) => Rule.required(),
-        }),
-      ],
+      type: 'ctaBlock', // <-- TYPE IS PRESENT (Assuming ctaBlock object exists)
+      description: 'Optional main call to action button for the hero.',
     }),
   ],
   preview: {
-    select: {
-      title: 'title',
-      subtitle: 'subtitle',
-      media: 'image',
-    },
+    select: {title: 'titleOverride', subtitle: 'subtitle', media: 'image'},
     prepare({title, subtitle, media}) {
       return {
-        title: title || 'Hero Section',
+        title: title || 'Hero Section (Uses Vehicle Name)',
         subtitle: subtitle || '',
         media: media || ImageIcon,
       }
