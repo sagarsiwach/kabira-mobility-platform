@@ -1,21 +1,13 @@
 // schema/documents/post.ts
-import {defineField, defineType, SlugValue} from 'sanity' // Import SlugValue
+import {defineField, defineType} from 'sanity'
 import {DocumentTextIcon} from '@sanity/icons'
 
 // Helper type for prepare function
 interface PostPreviewSelection {
   title?: string
   authorName?: string
-  media?: any // Media type can be complex
+  media?: any
   date?: string
-}
-// Helper type for context
-type PostContext = {
-  // More specific context if needed
-  document?: {_id?: string; slug?: SlugValue} // Add slug for context check
-  getClient: (options: {apiVersion: string}) => {
-    fetch: <T = any>(query: string, params?: Record<string, any>) => Promise<T>
-  }
 }
 
 export default defineType({
@@ -46,21 +38,19 @@ export default defineType({
         source: 'title',
         maxLength: 96,
         isUnique: async (value, context) => {
+          if (!value) return true
+
           const client = context.getClient({apiVersion: '2023-01-01'})
           const id = context.document?._id.replace(/^drafts\./, '')
-          // Use context.document.slug?.current if checking an existing document
-          const currentSlug = context.document?.slug?.current
-          // Prevent check if slug/id is missing (during initial creation)
-          if (!value || (!id && !currentSlug)) return true
 
           const params = {draft: `drafts.${id}`, published: id, slug: value}
-          // Check against slug.current
           const query = `!defined(*[_type == 'post' && !(_id in [$draft, $published]) && slug.current == $slug][0]._id)`
+
           try {
             return await client.fetch(query, params)
           } catch (error) {
             console.error('Uniqueness check failed:', error)
-            return `Uniqueness check failed: ${error.message}` // Return error message
+            return false // Return false on error to be safe
           }
         },
       },
@@ -94,7 +84,6 @@ export default defineType({
           title: 'Alternative Text',
           description: 'REQUIRED: Important for SEO & accessibility. Describe the image content.',
           validation: (Rule) => Rule.required().error('Alternative text cannot be empty.'),
-          // isHighlighted: true, // REMOVED: Not a standard property
         }),
         defineField({
           name: 'caption',
@@ -175,7 +164,7 @@ export default defineType({
           type: 'reference',
           to: [{type: 'post'}],
           options: {
-            filter: ({document}: {document: {_id?: string}}) => {
+            filter: ({document}) => {
               const currentId = document?._id?.replace('drafts.', '') || ''
               return currentId
                 ? {filter: '_id != $currentId', params: {currentId}}

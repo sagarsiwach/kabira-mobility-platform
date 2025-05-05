@@ -3,7 +3,7 @@ import {defineField, defineType} from 'sanity'
 import {HelpCircleIcon} from '@sanity/icons'
 
 export default defineType({
-  name: 'productFaqs', // Name matches the type used in productPage.pageBuilder
+  name: 'productFaqs',
   title: 'Product FAQ Block',
   type: 'object',
   icon: HelpCircleIcon,
@@ -52,11 +52,11 @@ export default defineType({
       title: 'titleOverride',
       faqCount: 'referencedFaqs.length',
     },
-    prepare({title, faqCount}: {title?: string; faqCount?: number}) {
+    prepare({title, faqCount}) {
       return {
         title: title || 'Product FAQ Section',
         subtitle: `${faqCount || 0} FAQ(s) selected`,
-        icon: HelpCircleIcon,
+        media: HelpCircleIcon,
       }
     },
   },

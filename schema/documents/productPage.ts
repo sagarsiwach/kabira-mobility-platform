@@ -1,9 +1,6 @@
 // schema/documents/productPage.ts
-import {defineField, defineType, SlugSourceContext, SlugValue} from 'sanity' // Import necessary types
+import {defineField, defineType} from 'sanity'
 import {RocketIcon} from '@sanity/icons'
-
-// Corrected SlugContext definition matching Sanity's SlugSourceContext
-type ProductPageSlugContext = SlugSourceContext // Use the imported type directly
 
 export default defineType({
   name: 'productPage',
@@ -35,25 +32,14 @@ export default defineType({
       description:
         'URL identifier for this page relative to /products/ (e.g., "km4000-launch" becomes /products/km4000-launch). Must be unique.',
       options: {
-        // Correctly typed source function
-        source: async (
-          doc: Record<string, any>,
-          context: ProductPageSlugContext,
-        ): Promise<string> => {
+        source: async (doc, context) => {
           const client = context.getClient({apiVersion: '2023-01-01'})
           let prefix = doc.title || 'product'
 
-          // Access parent data via context.parent if needed *synchronously* for source,
-          // but fetching related data like this is better done for *suggestion* or validation.
-          // Let's base the initial suggestion just on the title for simplicity here.
-          // The more complex async suggestion is possible but often adds complexity.
-          // prefix = doc.title || 'product-page'; // Simpler synchronous source
-
-          // If you absolutely need the related vehicle name for the *source*:
-          const vehicleRef = doc.relatedVehicle?._ref // Access relatedVehicle from the main document `doc`
+          const vehicleRef = doc.relatedVehicle?._ref
           if (vehicleRef) {
             try {
-              const vehicle = await client.fetch<{name?: string}>(`*[_id == $ref][0]{name}`, {
+              const vehicle = await client.fetch(`*[_id == $ref][0]{name}`, {
                 ref: vehicleRef,
               })
               if (vehicle?.name) {
@@ -64,7 +50,6 @@ export default defineType({
             }
           }
 
-          // Basic slugify
           return prefix
             .toLowerCase()
             .replace(/\s+/g, '-')
@@ -73,19 +58,19 @@ export default defineType({
         },
         maxLength: 96,
         isUnique: async (value, context) => {
+          if (!value) return true
+
           const client = context.getClient({apiVersion: '2023-01-01'})
           const id = context.document?._id.replace(/^drafts\./, '')
-          // Use context.document.slug?.current to check existing slug
-          const currentSlug = (context.document?.slug as SlugValue | undefined)?.current
-          if (!value || (!id && !currentSlug)) return true
 
           const params = {draft: `drafts.${id}`, published: id, slug: value}
           const query = `!defined(*[_type == 'productPage' && slug.current == $slug && !(_id in [$draft, $published])][0]._id)`
+
           try {
             return await client.fetch(query, params)
           } catch (error) {
             console.error('Uniqueness check failed:', error)
-            return `Uniqueness check failed: ${error.message}`
+            return false
           }
         },
       },
@@ -164,17 +149,7 @@ export default defineType({
       media: 'relatedVehicle.image',
       active: 'active',
     },
-    prepare({
-      title,
-      vehicleName,
-      media,
-      active,
-    }: {
-      title?: string
-      vehicleName?: string
-      media?: any
-      active?: boolean
-    }) {
+    prepare({title, vehicleName, media, active}) {
       return {
         title: title || 'Untitled Product Page',
         subtitle: `${vehicleName ? `For: ${vehicleName}` : 'No vehicle linked'} | ${
