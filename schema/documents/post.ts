@@ -10,6 +10,9 @@ interface PostPreviewSelection {
   date?: string
 }
 
+// Use the same consistent API version as in sanity.config.ts
+const apiVersionForValidation = '2024-03-15' // <<< ADDED constant for clarity
+
 export default defineType({
   name: 'post',
   title: 'Blog Post',
@@ -40,7 +43,8 @@ export default defineType({
         isUnique: async (value, context) => {
           if (!value) return true
 
-          const client = context.getClient({apiVersion: '2023-01-01'})
+          // Use the defined API version for the client
+          const client = context.getClient({apiVersion: apiVersionForValidation}) // <<< CHANGED: Use consistent apiVersion
           const id = context.document?._id.replace(/^drafts\./, '')
 
           const params = {draft: `drafts.${id}`, published: id, slug: value}
@@ -49,7 +53,7 @@ export default defineType({
           try {
             return await client.fetch(query, params)
           } catch (error) {
-            console.error('Uniqueness check failed:', error)
+            console.error('Uniqueness check failed (post slug):', error) // Added type info
             return false // Return false on error to be safe
           }
         },
@@ -164,11 +168,12 @@ export default defineType({
           type: 'reference',
           to: [{type: 'post'}],
           options: {
+            // Improved filter to ensure document is defined before accessing _id
             filter: ({document}) => {
-              const currentId = document?._id?.replace('drafts.', '') || ''
+              const currentId = document?._id?.replace('drafts.', '')
               return currentId
-                ? {filter: '_id != $currentId', params: {currentId}}
-                : {filter: 'true'}
+                ? {filter: '_type == "post" && _id != $currentId', params: {currentId}}
+                : {filter: '_type == "post"'} // Fallback if document context is unavailable
             },
           },
         },
