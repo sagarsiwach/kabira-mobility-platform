@@ -1,169 +1,185 @@
 // schema/documents/productPage.ts
-import {defineField, defineType} from 'sanity'
-import {RocketIcon, HelpCircleIcon} from '@sanity/icons'
+import {defineField, defineType, SlugSourceContext, SlugValue} from 'sanity' // Import necessary types
+import {RocketIcon} from '@sanity/icons'
+
+// Corrected SlugContext definition matching Sanity's SlugSourceContext
+type ProductPageSlugContext = SlugSourceContext // Use the imported type directly
 
 export default defineType({
   name: 'productPage',
-  title: 'Product Page',
+  title: 'Product Marketing Page',
   type: 'document',
   icon: RocketIcon,
   groups: [
-    {name: 'hero', title: 'Hero Section', default: true}, // Default group
-    {name: 'configurator', title: 'Vehicle Configurator'},
-    {name: 'features', title: 'Feature Carousels'},
-    {name: 'specifications', title: 'Technical Specifications'},
-    {name: 'faqs', title: 'FAQ Section'},
-    {name: 'videos', title: 'Video Section'},
-    {name: 'testimonials', title: 'Testimonials'},
+    {name: 'content', title: 'Page Content', default: true},
+    {name: 'relation', title: 'Related Vehicle'},
+    {name: 'configOverrides', title: 'Configurator Overrides'},
     {name: 'seo', title: 'SEO & Metadata'},
   ],
   fields: [
-    // Basic Product Information - Explicitly assign to default group 'hero'
+    // --- Content Group ---
     defineField({
       name: 'title',
-      title: 'Product Title',
+      title: 'Page Title',
       type: 'string',
-      group: 'hero', // Explicitly assign to default group
-      description: 'The main name of the product (e.g., KM4000)',
+      group: 'content',
+      description:
+        'The primary title displayed on this specific marketing page (e.g., "Experience the All-New KM4000").',
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'slug',
-      title: 'Slug',
+      title: 'Slug (URL Path)',
       type: 'slug',
-      group: 'hero', // Explicitly assign to default group
-      description: 'URL-friendly identifier for the product page',
+      group: 'content',
+      description:
+        'URL identifier for this page relative to /products/ (e.g., "km4000-launch" becomes /products/km4000-launch). Must be unique.',
       options: {
-        source: 'title',
+        // Correctly typed source function
+        source: async (
+          doc: Record<string, any>,
+          context: ProductPageSlugContext,
+        ): Promise<string> => {
+          const client = context.getClient({apiVersion: '2023-01-01'})
+          let prefix = doc.title || 'product'
+
+          // Access parent data via context.parent if needed *synchronously* for source,
+          // but fetching related data like this is better done for *suggestion* or validation.
+          // Let's base the initial suggestion just on the title for simplicity here.
+          // The more complex async suggestion is possible but often adds complexity.
+          // prefix = doc.title || 'product-page'; // Simpler synchronous source
+
+          // If you absolutely need the related vehicle name for the *source*:
+          const vehicleRef = doc.relatedVehicle?._ref // Access relatedVehicle from the main document `doc`
+          if (vehicleRef) {
+            try {
+              const vehicle = await client.fetch<{name?: string}>(`*[_id == $ref][0]{name}`, {
+                ref: vehicleRef,
+              })
+              if (vehicle?.name) {
+                prefix = `${vehicle.name}-${doc.title || 'page'}`
+              }
+            } catch (error) {
+              console.error('Error fetching related vehicle for slug source:', error)
+            }
+          }
+
+          // Basic slugify
+          return prefix
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '')
+            .slice(0, 80)
+        },
         maxLength: 96,
+        isUnique: async (value, context) => {
+          const client = context.getClient({apiVersion: '2023-01-01'})
+          const id = context.document?._id.replace(/^drafts\./, '')
+          // Use context.document.slug?.current to check existing slug
+          const currentSlug = (context.document?.slug as SlugValue | undefined)?.current
+          if (!value || (!id && !currentSlug)) return true
+
+          const params = {draft: `drafts.${id}`, published: id, slug: value}
+          const query = `!defined(*[_type == 'productPage' && slug.current == $slug && !(_id in [$draft, $published])][0]._id)`
+          try {
+            return await client.fetch(query, params)
+          } catch (error) {
+            console.error('Uniqueness check failed:', error)
+            return `Uniqueness check failed: ${error.message}`
+          }
+        },
       },
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'active',
-      title: 'Active',
+      title: 'Page Status',
       type: 'boolean',
-      group: 'hero', // Explicitly assign to default group
-      description: 'Whether this product page should be publicly visible',
+      group: 'content',
+      description: 'Is this product page publicly visible?',
       initialValue: true,
     }),
-
-    // Hero Section Content
     defineField({
-      name: 'heroSection',
-      title: 'Hero Section Content', // Renamed slightly for clarity
-      group: 'hero', // Assign to 'hero' group
-      type: 'heroSection',
-      description: 'The main promotional section at the top of the page',
-    }),
-
-    // Configurator
-    defineField({
-      name: 'configurator',
-      title: 'Vehicle Configurator',
-      group: 'configurator', // Assign to 'configurator' group
-      type: 'configuratorData',
-      description: 'JSON data for the 3D configurator/turntable',
-    }),
-
-    // Feature Carousels (Multiple)
-    defineField({
-      name: 'featureCarousels',
-      title: 'Feature Carousels',
-      group: 'features', // Assign to 'features' group
+      name: 'pageBuilder',
+      title: 'Page Content Builder',
       type: 'array',
-      of: [{type: 'featureCarousel'}],
-      description: 'Multiple feature carousels sections',
-    }),
-
-    // Technical Specifications
-    defineField({
-      name: 'techSpecs',
-      title: 'Technical Specifications',
-      group: 'specifications', // Assign to 'specifications' group
-      type: 'techSpecsSection',
-      description: 'Detailed specifications organized into groups.',
-    }),
-
-    // --- FAQ Section Fields ---
-    defineField({
-      name: 'faqSectionTitle',
-      title: 'FAQ Section Title Override',
-      type: 'string',
-      group: 'faqs', // Assign to 'faqs' group
-      description:
-        'Optional: Title displayed above the FAQ list on this page (e.g., "KM4000 FAQs"). Defaults to "Frequently Asked Questions" if empty.',
-    }),
-    defineField({
-      name: 'referencedFaqs',
-      title: 'Select FAQs for this Page',
-      type: 'array',
-      group: 'faqs', // Assign to 'faqs' group
-      description:
-        'Choose relevant FAQs from the global library to display on this specific product page.',
+      group: 'content',
+      description: 'Build the page by adding and arranging content sections below.',
       of: [
-        {
-          type: 'reference',
-          to: [{type: 'faqItem'}],
-        },
+        {type: 'heroSection', title: 'Hero Section'},
+        {type: 'featureCarousel', title: 'Feature Carousel'},
+        {type: 'techSpecsSection', title: 'Tech Specs Block'},
+        {type: 'videoSection', title: 'Video Block'},
+        {type: 'testimonialSection', title: 'Testimonials Block'},
+        {type: 'gallerySection', title: 'Image Gallery'},
+        {type: 'productFaqs', title: 'Product FAQ Block'},
+        {type: 'faqBlock', title: 'Generic FAQ Block'},
+        {type: 'blockContent', title: 'Text Block'},
+        {type: 'ctaBlock', title: 'Call to Action'},
+        {type: 'textWithImageBlock', title: 'Text w/ Image'},
+        {type: 'downloadList', title: 'Download List'},
       ],
-      validation: (Rule) => Rule.unique().error('Each FAQ can only be added once to this page.'),
+      validation: (Rule) =>
+        Rule.required().min(1).error('Page must have at least one content block.'),
     }),
+
+    // --- Relation Group ---
     defineField({
-      name: 'faqAllowMultipleOpen',
-      title: 'Allow Multiple Open FAQs?',
-      type: 'boolean',
-      group: 'faqs', // Assign to 'faqs' group
-      description: 'Allow users to expand multiple questions at once in the UI.',
-      initialValue: false,
-    }),
-    defineField({
-      name: 'faqInitialOpenIndex',
-      title: 'Initially Open FAQ Index',
-      type: 'number',
-      group: 'faqs', // Assign to 'faqs' group
+      name: 'relatedVehicle',
+      title: 'Related Vehicle Model',
+      type: 'reference',
+      group: 'relation',
       description:
-        'Index (0=first selected, 1=second selected, etc.) of the FAQ to show open by default. Use -1 or leave empty for none.',
-      initialValue: -1,
-      validation: (Rule) => Rule.integer(),
+        'REQUIRED: Link this marketing page to the core Vehicle Model data (provides specs, pricing, configurator setup, etc.).',
+      to: [{type: 'vehicleModel'}],
+      validation: (Rule) => Rule.required().error('A related vehicle model must be selected.'),
+      options: {
+        disableNew: true,
+      },
     }),
-    // --- End FAQ Section Fields ---
 
-    // Video Section
+    // --- Configurator Overrides Group ---
     defineField({
-      name: 'videoSection',
-      title: 'Video Section',
-      group: 'videos', // Assign to 'videos' group
-      type: 'videoSection',
-      description: 'Product video showcase section',
+      name: 'configuratorOverrides',
+      title: '360 Configurator Appearance Overrides',
+      type: 'configuratorData',
+      group: 'configOverrides',
+      description:
+        'Optional: Override default configurator appearance/behavior (e.g., rotation speed, zoom limits) for this specific page using responsive JSON data.',
     }),
 
-    // Testimonial Section
-    defineField({
-      name: 'testimonialSection',
-      title: 'Testimonial Section',
-      group: 'testimonials', // Assign to 'testimonials' group
-      type: 'testimonialSection',
-      description: 'Customer reviews and testimonials section',
-    }),
-
-    // SEO & Metadata
+    // --- SEO Group ---
     defineField({
       name: 'seo',
       title: 'SEO Settings',
-      group: 'seo', // Assign to 'seo' group
+      group: 'seo',
       type: 'seoSettings',
-      description: 'Search engine optimization settings for this product page',
+      description: 'Configure search engine optimization settings for this specific product page.',
     }),
   ],
   preview: {
     select: {
       title: 'title',
+      vehicleName: 'relatedVehicle.name',
+      media: 'relatedVehicle.image',
       active: 'active',
-      media: 'heroSection.image',
     },
-    prepare({title, active, media}) {
+    prepare({
+      title,
+      vehicleName,
+      media,
+      active,
+    }: {
+      title?: string
+      vehicleName?: string
+      media?: any
+      active?: boolean
+    }) {
       return {
         title: title || 'Untitled Product Page',
-        subtitle: active ? 'Status: Active' : 'Status: Inactive',
+        subtitle: `${vehicleName ? `For: ${vehicleName}` : 'No vehicle linked'} | ${
+          active === false ? 'Inactive' : 'Active'
+        }`,
         media: media || RocketIcon,
       }
     },
