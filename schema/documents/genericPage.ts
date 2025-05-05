@@ -60,10 +60,8 @@ export default defineType({
         },
         {type: 'videoSection', title: 'Video Block'},
         {type: 'ctaBlock', title: 'Call to Action'},
-        {type: 'downloadList', title: 'Download List'},
         {type: 'textWithImageBlock', title: 'Text w/ Image'},
-        {type: 'testimonialSection', title: 'Testimonials Block'},
-        // Add other relevant block types: featureCarousel etc. if needed
+        // Removed unknown types: downloadList, testimonialSection
       ],
       validation: (Rule) =>
         Rule.required().min(1).error('Page must have at least one content block.'),

@@ -1,9 +1,8 @@
-// schema/documents/vehicle.ts (CORRECTED - Ensure export default is present)
+// schema/documents/vehicle.ts
 import {defineType, defineField} from 'sanity'
 import {RocketIcon} from '@sanity/icons'
 import {indianStates} from '../constants' // Make sure constants path is correct
 
-// Verify this 'export default' statement exists and wraps the defineType call
 export default defineType({
   name: 'vehicle', // Unified name
   title: 'Vehicle', // Unified title
@@ -195,10 +194,26 @@ export default defineType({
     defineField({
       name: 'configuratorSetup',
       title: '360 Configurator Core Setup',
-      type: 'configuratorSetup',
+      type: 'object', // Changed from 'configuratorSetup' to 'object'
       group: 'configurator',
       description:
         'REQUIRED technical settings for the 360° image sequence: frame count & available color slugs/swatches. MUST match assets in storage.',
+      fields: [
+        defineField({
+          name: 'frameCount',
+          title: 'Total Frame Count',
+          type: 'number',
+          description: 'Number of frames in the 360 sequence (e.g., 36, 72)',
+          validation: (Rule) => Rule.required().min(1),
+        }),
+        defineField({
+          name: 'colorSlugs',
+          title: 'Color Slugs',
+          type: 'array',
+          of: [{type: 'string'}],
+          description: 'Color identifiers that match folder names in the image storage',
+        }),
+      ],
       validation: (Rule) =>
         Rule.required().error('Configurator Setup is required for the 3D view.'),
     }),
@@ -274,11 +289,10 @@ export default defineType({
     defineField({
       name: 'linkedProductPage',
       title: 'Primary Marketing Page',
-      type: 'reference',
+      type: 'string', // Changed from 'reference' to 'string'
       group: 'marketingSeo',
       description:
         'Link to the main Product Page that markets this vehicle. Used for cross-linking.',
-      to: [{type: 'productPage'}],
     }),
     defineField({
       name: 'vehiclePageSeo',

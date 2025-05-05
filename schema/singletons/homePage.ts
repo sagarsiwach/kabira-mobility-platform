@@ -1,4 +1,4 @@
-// schema/singletons/homePage.ts (CORRECTED)
+// schema/singletons/homePage.ts
 import {defineField, defineType} from 'sanity'
 import {HomeIcon} from '@sanity/icons'
 
@@ -51,7 +51,6 @@ export default defineType({
       group: 'content',
       description: 'Select vehicle models to feature on the homepage.',
       of: [
-        // --- FIX HERE ---
         {type: 'reference', to: [{type: 'vehicle'}]}, // Reference the consolidated 'vehicle' type
       ],
       validation: (Rule) => Rule.unique().max(4).warning('Suggest featuring 3-4 vehicles.'),
@@ -64,15 +63,11 @@ export default defineType({
       description: 'Add more content blocks below the featured vehicles.',
       of: [
         {type: 'blockContent', title: 'Text Block'},
-        {type: 'featureCarousel', title: 'Feature Carousel'},
         {type: 'videoSection', title: 'Video Block'},
-        {type: 'testimonialSection', title: 'Testimonials Block'},
         {type: 'ctaBlock', title: 'Call to Action'},
         {type: 'textWithImageBlock', title: 'Text w/ Image'},
-        // Add other relevant block types like gallerySection, downloadList etc.
-        {type: 'gallerySection', title: 'Image Gallery'},
-        {type: 'downloadList', title: 'Download List'},
         {type: 'faqBlock', title: 'FAQ Block'},
+        // Removed unknown types: featureCarousel, testimonialSection, gallerySection, downloadList
       ],
     }),
 
