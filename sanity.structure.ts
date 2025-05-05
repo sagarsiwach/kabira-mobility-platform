@@ -1,4 +1,4 @@
-// sanity.structure.ts (CORRECTED HELPER FUNCTION)
+// sanity.structure.ts
 import {StructureBuilder} from 'sanity/structure'
 import {
   CogIcon, // Settings
@@ -12,7 +12,6 @@ import {
   HelpCircleIcon, // FAQ
   BillIcon, // Legal, Press Release
   HomeIcon, // Homepage
-  MenuIcon, // Navigation
 } from '@sanity/icons'
 import React from 'react'
 
@@ -26,7 +25,6 @@ const singletonListItem = (
   title?: string,
   icon?: React.ComponentType<any>,
 ) => {
-  // --- FIX HERE: Use a valid JavaScript variable name ---
   const documentId = typeName // Use the type name as the document ID for singletons
 
   return S.listItem()
@@ -36,7 +34,7 @@ const singletonListItem = (
     .child(
       S.document()
         .schemaType(typeName)
-        .documentId(documentId) // Explicitly set the document ID using the corrected variable
+        .documentId(documentId) // Explicitly set the document ID
         .title(title || typeName),
     )
 }
@@ -55,10 +53,7 @@ export const structure = (S: StructureBuilder) =>
         .child(
           S.list()
             .title('Configuration')
-            .items([
-              singletonListItem(S, 'siteSettings', 'Global Site Settings', CogIcon),
-              singletonListItem(S, 'navigationSettings', 'Navigation Setup', MenuIcon),
-            ]),
+            .items([singletonListItem(S, 'siteSettings', 'Global Site Settings', CogIcon)]),
         ),
       S.divider(),
 
@@ -71,7 +66,7 @@ export const structure = (S: StructureBuilder) =>
             .title('Manage Pages')
             .items([
               singletonListItem(S, 'homePage', 'Homepage', HomeIcon),
-              S.documentTypeListItem('productPage').title('Product Pages').icon(RocketIcon),
+              S.documentTypeListItem('productItem').title('Products').icon(RocketIcon),
               S.divider(),
               singletonListItem(S, 'testRidePage', 'Test Ride Page', RocketIcon),
               singletonListItem(S, 'faqPage', 'FAQ Page', HelpCircleIcon),
