@@ -49,7 +49,7 @@ export default defineType({
       type: 'array',
       group: 'content',
       description: 'Select vehicle models to feature on the homepage.',
-      of: [{type: 'reference', to: [{type: 'bookingVehicle'}]}],
+      of: [{type: 'reference', to: [{type: 'bookingVehicle'}]}], // Updated to bookingVehicle
       validation: (Rule) => Rule.unique().max(4).warning('Suggest featuring 3-4 vehicles.'),
     }),
     defineField({

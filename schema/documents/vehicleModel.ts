@@ -2,9 +2,6 @@
 import {defineType, defineField} from 'sanity'
 import {RocketIcon} from '@sanity/icons'
 
-// Helper type removed as it's no longer used directly in this file's validation
-// type DocumentValidationContext = { ... }
-
 export default defineType({
   name: 'vehicleModel',
   title: 'Vehicle Model',
@@ -47,17 +44,22 @@ export default defineType({
             .replace(/\s+/g, '-')
             .replace(/[^a-z0-9-]/g, ''),
         isUnique: async (value, context) => {
+          if (!value) return true
+
           const client = context.getClient({apiVersion: '2023-01-01'})
           const id = context.document?._id.replace(/^drafts\./, '')
-          const currentCode = (context.document?.modelCode as any)?.current // Access current value safely
-          if (!value || (!id && !currentCode)) return true
+          const currentCode = context.document?.modelCode?.current
+
+          if (!id && !currentCode) return true
+
           const params = {draft: `drafts.${id}`, published: id, modelCode: value}
           const query = `!defined(*[_type == 'vehicleModel' && !(_id in [$draft, $published]) && modelCode.current == $modelCode][0]._id)`
+
           try {
             return await client.fetch(query, params)
           } catch (error) {
             console.error('Uniqueness check failed:', error)
-            return `Uniqueness check failed: ${error.message}`
+            return false
           }
         },
       },
@@ -74,17 +76,22 @@ export default defineType({
         source: 'name',
         maxLength: 96,
         isUnique: async (value, context) => {
+          if (!value) return true
+
           const client = context.getClient({apiVersion: '2023-01-01'})
           const id = context.document?._id.replace(/^drafts\./, '')
-          const currentSlug = (context.document?.slug as any)?.current // Access current value safely
-          if (!value || (!id && !currentSlug)) return true
+          const currentSlug = context.document?.slug?.current
+
+          if (!id && !currentSlug) return true
+
           const params = {draft: `drafts.${id}`, published: id, slug: value}
           const query = `!defined(*[_type == 'vehicleModel' && !(_id in [$draft, $published]) && slug.current == $slug][0]._id)`
+
           try {
             return await client.fetch(query, params)
           } catch (error) {
             console.error('Uniqueness check failed:', error)
-            return `Uniqueness check failed: ${error.message}`
+            return false
           }
         },
       },
@@ -123,7 +130,6 @@ export default defineType({
           title: 'Alternative Text',
           validation: (Rule) =>
             Rule.required().error('Alternative text is required for accessibility and SEO.'),
-          // isHighlighted: true, // REMOVED: Not a standard property
           description: 'Crucial for accessibility & SEO. Describe the vehicle shown.',
         }),
       ],
@@ -141,7 +147,7 @@ export default defineType({
       of: [{type: 'variant'}],
       validation: (Rule) => [
         Rule.required().min(1).error('At least one variant must be defined.'),
-        Rule.custom((variants: any[] | undefined) => {
+        Rule.custom((variants) => {
           if (!variants) return true
           const defaultVariants = variants.filter((v) => v?.isDefault)
           if (defaultVariants.length === 0) return 'One variant must be marked as default.'
@@ -166,7 +172,7 @@ export default defineType({
       of: [{type: 'colorOption'}],
       validation: (Rule) => [
         Rule.required().min(1).error('At least one color option must be defined.'),
-        Rule.custom((colors: any[] | undefined) => {
+        Rule.custom((colors) => {
           if (!colors) return true
           const defaultColors = colors.filter((c) => c?.isDefault)
           if (defaultColors.length === 0) return 'One color must be marked as default.'
@@ -190,7 +196,7 @@ export default defineType({
         'List all accessories, packages, warranties, or services available for this model.',
       of: [{type: 'componentOption'}],
       validation: (Rule) =>
-        Rule.custom((components: any[] | undefined) => {
+        Rule.custom((components) => {
           if (!components) return true
           const codes = components.map((c) => c?.code?.current).filter(Boolean)
           if (new Set(codes).size !== codes.length) {
@@ -241,7 +247,7 @@ export default defineType({
           to: [{type: 'productPage'}],
           options: {
             filter: ({document}) => {
-              const docId = (document as any)?._id
+              const docId = document?._id
               if (!docId) {
                 return {filter: '_id == "____NON_EXISTENT____"'}
               }
@@ -270,17 +276,7 @@ export default defineType({
       media: 'image',
       isBookable: 'isBookable',
     },
-    prepare({
-      title,
-      code,
-      media,
-      isBookable,
-    }: {
-      title?: string
-      code?: string
-      media?: any
-      isBookable?: boolean
-    }) {
+    prepare({title, code, media, isBookable}) {
       const subtitle = `${code ? `(${code})` : ''}${isBookable === false ? ' (Not Bookable)' : ''}`
       return {
         title: `${title || 'Untitled Model'}`,

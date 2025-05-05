@@ -2,19 +2,6 @@
 import {defineField, defineType} from 'sanity'
 import {LinkIcon} from '@sanity/icons'
 
-// Add all relevant document types that can be linked internally
-const internalLinkTypes = [
-  'bookingVehicle',
-  'post',
-  'category',
-  'legalPage',
-  'genericPage',
-  'pressRelease',
-  'faqCategory',
-  'author', // Added Author
-  // Add other types like 'dealer' if you need to link to them directly
-]
-
 export default defineType({
   name: 'link',
   title: 'Link',
@@ -29,7 +16,7 @@ export default defineType({
         list: [
           {title: 'Internal Page/Document', value: 'internal'},
           {title: 'External URL', value: 'external'},
-          {title: 'Simple Path', value: 'path'}, // For fixed paths like /book, /dealers
+          {title: 'Simple Path', value: 'path'},
         ],
         layout: 'radio',
         direction: 'horizontal',
@@ -43,7 +30,18 @@ export default defineType({
       type: 'reference',
       description:
         "Link to another document within Sanity. The URL will be generated based on the linked document's slug.",
-      to: internalLinkTypes.map((type) => ({type})),
+      to: [
+        {type: 'productPage'},
+        {type: 'post'},
+        {type: 'category'},
+        {type: 'legalPage'},
+        {type: 'genericPage'},
+        {type: 'pressRelease'},
+        {type: 'faqCategory'},
+        {type: 'author'},
+        {type: 'bookingVehicle'},
+        {type: 'dealer'},
+      ],
       hidden: ({parent}) => (parent as any)?.linkType !== 'internal',
       validation: (Rule) =>
         Rule.custom((value, context) => {
@@ -98,8 +96,8 @@ export default defineType({
   preview: {
     select: {
       linkType: 'linkType',
-      internalTitle: 'internalReference.title', // Common title field
-      internalName: 'internalReference.name', // Name field (e.g., for bookingVehicle, author)
+      internalTitle: 'internalReference.title',
+      internalName: 'internalReference.name',
       internalSlug: 'internalReference.slug.current',
       externalUrl: 'externalUrl',
       path: 'path',

@@ -9,12 +9,9 @@ export default defineType({
   icon: RocketIcon,
   groups: [
     {name: 'content', title: 'Page Content', default: true},
-    {name: 'relation', title: 'Related Vehicle'},
-    {name: 'configOverrides', title: 'Configurator Overrides'},
     {name: 'seo', title: 'SEO & Metadata'},
   ],
   fields: [
-    // --- Content Group ---
     defineField({
       name: 'title',
       title: 'Page Title',
@@ -32,30 +29,7 @@ export default defineType({
       description:
         'URL identifier for this page relative to /products/ (e.g., "km4000-launch" becomes /products/km4000-launch). Must be unique.',
       options: {
-        source: async (doc, context) => {
-          const client = context.getClient({apiVersion: '2023-01-01'})
-          let prefix = doc.title || 'product'
-
-          const vehicleRef = doc.relatedVehicle?._ref
-          if (vehicleRef) {
-            try {
-              const vehicle = await client.fetch(`*[_id == $ref][0]{name}`, {
-                ref: vehicleRef,
-              })
-              if (vehicle?.name) {
-                prefix = `${vehicle.name}-${doc.title || 'page'}`
-              }
-            } catch (error) {
-              console.error('Error fetching related vehicle for slug source:', error)
-            }
-          }
-
-          return prefix
-            .toLowerCase()
-            .replace(/\s+/g, '-')
-            .replace(/[^a-z0-9-]/g, '')
-            .slice(0, 80)
-        },
+        source: 'title',
         maxLength: 96,
         isUnique: async (value, context) => {
           if (!value) return true
@@ -89,16 +63,18 @@ export default defineType({
       title: 'Page Content Builder',
       type: 'array',
       group: 'content',
-      description: 'Build the page by adding and arranging content sections below.',
+      description: 'Build the page by adding and arranging the following content sections:',
       of: [
-        {type: 'heroSection', title: 'Hero Section'},
-        {type: 'featureCarousel', title: 'Feature Carousel'},
-        {type: 'techSpecsSection', title: 'Tech Specs Block'},
-        {type: 'videoSection', title: 'Video Block'},
-        {type: 'testimonialSection', title: 'Testimonials Block'},
-        {type: 'gallerySection', title: 'Image Gallery'},
-        {type: 'productFaqs', title: 'Product FAQ Block'},
-        {type: 'faqBlock', title: 'Generic FAQ Block'},
+        {type: 'heroSection', title: '1. Hero Section'},
+        {type: 'turntableSection', title: '2. Turntable'}, // New section for 360 view
+        {type: 'featureCarousel', title: '3. Feature Carousel'},
+        {type: 'gallerySection', title: '4. Image Gallery'},
+        {type: 'techSpecsSection', title: '5. Tech Specs'},
+        {type: 'productFaqs', title: '6. Product FAQ Block'},
+        {type: 'testimonialSection', title: '7. Testimonials Block'},
+        {type: 'videoSection', title: '8. Video Block'},
+
+        // Additional optional sections
         {type: 'blockContent', title: 'Text Block'},
         {type: 'ctaBlock', title: 'Call to Action'},
         {type: 'textWithImageBlock', title: 'Text w/ Image'},
@@ -106,31 +82,6 @@ export default defineType({
       ],
       validation: (Rule) =>
         Rule.required().min(1).error('Page must have at least one content block.'),
-    }),
-
-    // --- Relation Group ---
-    defineField({
-      name: 'relatedVehicle',
-      title: 'Related Vehicle Model',
-      type: 'reference',
-      group: 'relation',
-      description:
-        'REQUIRED: Link this marketing page to the core Vehicle Model data (provides specs, pricing, configurator setup, etc.).',
-      to: [{type: 'vehicleModel'}],
-      validation: (Rule) => Rule.required().error('A related vehicle model must be selected.'),
-      options: {
-        disableNew: true,
-      },
-    }),
-
-    // --- Configurator Overrides Group ---
-    defineField({
-      name: 'configuratorOverrides',
-      title: '360 Configurator Appearance Overrides',
-      type: 'configuratorData',
-      group: 'configOverrides',
-      description:
-        'Optional: Override default configurator appearance/behavior (e.g., rotation speed, zoom limits) for this specific page using responsive JSON data.',
     }),
 
     // --- SEO Group ---
@@ -145,16 +96,13 @@ export default defineType({
   preview: {
     select: {
       title: 'title',
-      vehicleName: 'relatedVehicle.name',
-      media: 'relatedVehicle.image',
+      media: 'heroSection.image',
       active: 'active',
     },
-    prepare({title, vehicleName, media, active}) {
+    prepare({title, media, active}) {
       return {
         title: title || 'Untitled Product Page',
-        subtitle: `${vehicleName ? `For: ${vehicleName}` : 'No vehicle linked'} | ${
-          active === false ? 'Inactive' : 'Active'
-        }`,
+        subtitle: `${active === false ? 'Inactive' : 'Active'} Product Page`,
         media: media || RocketIcon,
       }
     },

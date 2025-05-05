@@ -1,12 +1,9 @@
 // sanity.structure.ts
-// (Previous version provided was correct based on the refactoring plan)
-// Keep the last provided version of sanity.structure.ts
 import {StructureBuilder} from 'sanity/structure'
 import {
   CogIcon,
   PinIcon,
-  RocketIcon, // Using Rocket for Vehicle/Product focus
-  CubeIcon, // Use Cube for Vehicle Data Section Title
+  RocketIcon,
   DocumentIcon,
   ComposeIcon,
   DocumentTextIcon,
@@ -16,19 +13,20 @@ import {
   BillIcon,
   HomeIcon,
   MenuIcon,
+  CalendarIcon,
 } from '@sanity/icons'
-import React from 'react' // Ensure React is imported if using JSX in helper
+import React from 'react'
 
 // Helper function to create singleton document nodes
 const singletonListItem = (
   S: StructureBuilder,
   typeName: string,
   title?: string,
-  icon?: React.ComponentType<any>, // Use React.ComponentType for icons
+  icon?: React.ComponentType<any>,
 ) =>
   S.listItem()
     .title(title || typeName)
-    .id(typeName) // Use typeName as ID for stability
+    .id(typeName)
     .icon(icon)
     .child(
       S.document()
@@ -55,7 +53,7 @@ export const structure = (S: StructureBuilder) =>
         ),
       S.divider(),
 
-      // --- Section 2: Pages ---
+      // --- Section 2: Website Pages (including Product Pages) ---
       S.listItem()
         .title('Website Pages')
         .icon(DocumentIcon)
@@ -64,46 +62,28 @@ export const structure = (S: StructureBuilder) =>
             .title('Manage Pages')
             .items([
               singletonListItem(S, 'homePage', 'Homepage', HomeIcon),
-              S.documentTypeListItem('productPage') // Product Marketing Pages
-                .title('Product Pages')
-                .icon(RocketIcon),
+              S.documentTypeListItem('productPage').title('Product Pages').icon(RocketIcon),
               S.divider(),
-              singletonListItem(S, 'testRidePage', 'Test Ride Page', RocketIcon), // Group related pages
+              singletonListItem(S, 'testRidePage', 'Test Ride Page', RocketIcon),
               singletonListItem(S, 'faqPage', 'FAQ Page', HelpCircleIcon),
               singletonListItem(S, 'blogPage', 'Blog Listing Page', ComposeIcon),
               S.divider(),
               S.documentTypeListItem('genericPage')
                 .title('Standard Pages (About, etc)')
                 .icon(DocumentIcon),
-              S.documentTypeListItem('legalPage') // Moved Legal Pages here
-                .title('Legal Pages')
-                .icon(BillIcon),
+              S.documentTypeListItem('legalPage').title('Legal Pages').icon(BillIcon),
             ]),
         ),
       S.divider(),
 
-      // --- Section 3: Vehicle Data ---
+      // --- Section 3: Booking (renamed from Vehicles & Data) ---
       S.listItem()
-        .title('Vehicles & Data') // Changed Title
-        .icon(CubeIcon) // Cube represents the 'data' aspect
+        .title('Booking')
+        .icon(CalendarIcon)
         .child(
           S.list()
-            .title('Manage Vehicle Models')
-            .items([
-              S.documentTypeListItem('vehicleModel') // Use the merged vehicleModel
-                .title('All Vehicle Models')
-                .icon(RocketIcon), // Use RocketIcon for the vehicle itself
-              S.listItem() // Optional Filtered List
-                .title('Bookable Models')
-                .icon(RocketIcon) // Consistent icon
-                .child(
-                  S.documentList()
-                    .title('Bookable Models')
-                    .filter('_type == "vehicleModel" && isBookable == true')
-                    .defaultOrdering([{field: 'name', direction: 'asc'}]),
-                ),
-              // Add other relevant filters if needed (e.g., by category if you add one)
-            ]),
+            .title('Manage Bookings')
+            .items([S.documentTypeListItem('bookingVehicle').title('Vehicles').icon(RocketIcon)]),
         ),
       S.divider(),
 
@@ -130,9 +110,7 @@ export const structure = (S: StructureBuilder) =>
           S.list()
             .title('FAQ Management')
             .items([
-              S.documentTypeListItem('faqItem') // Direct link to items
-                .title('All FAQ Items')
-                .icon(HelpCircleIcon),
+              S.documentTypeListItem('faqItem').title('All FAQ Items').icon(HelpCircleIcon),
               S.documentTypeListItem('faqCategory').title('FAQ Categories').icon(TagIcon),
             ]),
         ),
@@ -141,14 +119,13 @@ export const structure = (S: StructureBuilder) =>
       // --- Section 6: Other Content Types ---
       S.listItem()
         .title('Other Content')
-        .icon(DocumentTextIcon) // Generic icon for the section
+        .icon(DocumentTextIcon)
         .child(
           S.list()
             .title('Manage Other Content')
             .items([
               S.documentTypeListItem('pressRelease').title('Press Releases').icon(BillIcon),
               S.documentTypeListItem('dealer').title('Dealers').icon(PinIcon),
-              // Add any other distinct document types here in the future
             ]),
         ),
     ])
