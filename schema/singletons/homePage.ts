@@ -20,14 +20,13 @@ export default defineType({
       description: 'For internal reference in the CMS.',
       initialValue: 'Home Page',
       readOnly: true,
-      // group: 'hero', // No need to group this internal title
     }),
 
     // Hero Section Group
     defineField({
       name: 'hero',
       title: 'Hero Section Content',
-      type: 'heroSection', // Use the reusable heroSection object
+      type: 'heroSectionBlock', // CHANGED FROM 'heroSection'
       group: 'hero',
       description: 'Configure the main hero banner for the homepage.',
       options: {
@@ -50,9 +49,7 @@ export default defineType({
       type: 'array',
       group: 'content',
       description: 'Select vehicle models to feature on the homepage.',
-      of: [
-        {type: 'reference', to: [{type: 'vehicle'}]}, // Reference the consolidated 'vehicle' type
-      ],
+      of: [{type: 'reference', to: [{type: 'vehicle'}]}],
       validation: (Rule) => Rule.unique().max(4).warning('Suggest featuring 3-4 vehicles.'),
     }),
     defineField({
