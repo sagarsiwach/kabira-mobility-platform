@@ -21,12 +21,10 @@ export default defineType({
       initialValue: 'Home Page',
       readOnly: true,
     }),
-
-    // Hero Section Group
     defineField({
       name: 'hero',
       title: 'Hero Section Content',
-      type: 'heroSectionBlock', // CHANGED FROM 'heroSection'
+      type: 'heroSectionBlock',
       group: 'hero',
       description: 'Configure the main hero banner for the homepage.',
       options: {
@@ -34,8 +32,6 @@ export default defineType({
         collapsed: false,
       },
     }),
-
-    // Content Group (Page Builder)
     defineField({
       name: 'featuredVehiclesTitle',
       title: 'Featured Vehicles Section Title',
@@ -48,6 +44,7 @@ export default defineType({
       title: 'Featured Vehicles',
       type: 'array',
       group: 'content',
+      initialValue: [],
       description: 'Select vehicle models to feature on the homepage.',
       of: [{type: 'reference', to: [{type: 'vehicle'}]}],
       validation: (Rule) => Rule.unique().max(4).warning('Suggest featuring 3-4 vehicles.'),
@@ -57,18 +54,18 @@ export default defineType({
       title: 'Additional Content Sections',
       type: 'array',
       group: 'content',
+      initialValue: [],
       description: 'Add more content blocks below the featured vehicles.',
       of: [
         {type: 'blockContent', title: 'Text Block'},
-        {type: 'videoSection', title: 'Video Block'},
+        {type: 'videoBlock', title: 'Featured Video Block'},
+        {type: 'galleryBlock', title: 'Image Gallery Block'}, // <<< ADDED
         {type: 'ctaBlock', title: 'Call to Action'},
         {type: 'textWithImageBlock', title: 'Text w/ Image'},
         {type: 'faqBlock', title: 'FAQ Block'},
-        // Removed unknown types: featureCarousel, testimonialSection, gallerySection, downloadList
+        // {type: 'featureCarouselBlock', title: 'Feature Carousel'}, // Add if needed for home page
       ],
     }),
-
-    // SEO Group
     defineField({
       name: 'seo',
       title: 'SEO Settings',

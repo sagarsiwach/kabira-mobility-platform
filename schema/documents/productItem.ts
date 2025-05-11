@@ -1,9 +1,7 @@
 // schema/documents/productItem.ts
-import {defineField, defineType, Rule} from 'sanity' // Added Rule for validation
+import {defineField, defineType, Rule} from 'sanity'
 import {RocketIcon} from '@sanity/icons'
 
-// Define a consistent API version (replace with your actual setting if different)
-// This should match the apiVersion used in your sanity.config.ts for client operations
 const SANITY_API_VERSION_FOR_VALIDATION = process.env.SANITY_STUDIO_API_VERSION || '2024-03-15'
 
 export default defineType({
@@ -12,12 +10,11 @@ export default defineType({
   type: 'document',
   icon: RocketIcon,
   groups: [
-    {name: 'pageInfo', title: 'Page Information', default: true}, // Changed default group
+    {name: 'pageInfo', title: 'Page Information', default: true},
     {name: 'content', title: 'Page Content & Structure'},
     {name: 'seo', title: 'SEO'},
   ],
   fields: [
-    // --- Page Information Group ---
     defineField({
       name: 'title',
       title: 'Product Page Title',
@@ -46,7 +43,7 @@ export default defineType({
             return await client.fetch(query, params)
           } catch (error) {
             console.error('Uniqueness check failed (productItem slug):', error)
-            return false // Fail validation on error to prevent duplicates
+            return false
           }
         },
       },
@@ -61,7 +58,7 @@ export default defineType({
       initialValue: true,
     }),
     defineField({
-      name: 'relatedVehicleData', // Optional: Link to the core Vehicle data document
+      name: 'relatedVehicleData',
       title: 'Core Vehicle Data (Optional)',
       type: 'reference',
       group: 'pageInfo',
@@ -69,42 +66,35 @@ export default defineType({
       description:
         'Optional: Link to the corresponding core vehicle data document. Useful if this page is primarily about one vehicle and you need to pull specs/details not directly in page builder.',
     }),
-
-    // --- Page Content & Structure Group ---
     defineField({
       name: 'pageBuilder',
       title: 'Page Sections',
       type: 'array',
       group: 'content',
       description: 'Add, edit, and reorder the content sections for this product page.',
+      initialValue: [],
       of: [
-        // Define the allowed block types for product pages
         {type: 'heroSectionBlock', title: 'Hero Section'},
         {type: 'configuratorSectionBlock', title: '360 Configurator'},
-        {type: 'featureCarouselBlock', title: 'Feature Carousel'}, // <-- NEWLY ADDED
-        {type: 'videoSection', title: 'Video Section'},
+        {type: 'featureCarouselBlock', title: 'Feature Carousel'},
+        {type: 'videoBlock', title: 'Featured Video Block'},
+        {type: 'galleryBlock', title: 'Image Gallery Block'}, // <<< ADDED
         {type: 'textWithImageBlock', title: 'Text w/ Image'},
-        {type: 'faqBlock', title: 'FAQ Section (Referenced)'}, // For selecting existing FAQs
-        // Consider if you need a simple rich text block here too:
+        {type: 'faqBlock', title: 'FAQ Section (Referenced)'},
         // {type: 'blockContent', title: 'Rich Text Block'},
       ],
       validation: (Rule) =>
         Rule.custom((pageBuilderValue) => {
           if (!pageBuilderValue || pageBuilderValue.length === 0) {
-            return 'A product page must have at least one content section.'
+            // return 'A product page must have at least one content section.'
           }
-          // Example: Ensure at least one heroSectionBlock if required
-          // const hasHero = pageBuilderValue.some((block: any) => block._type === 'heroSectionBlock');
-          // if (!hasHero) return 'A Hero Section is required for product pages.';
           return true
         }),
     }),
-
-    // --- SEO Group ---
     defineField({
       name: 'seo',
       title: 'SEO Settings',
-      type: 'seoSettings', // Assumes seoSettings object exists and is imported
+      type: 'seoSettings',
       group: 'seo',
       description: 'Configure search engine appearance for this specific product page.',
     }),
@@ -114,12 +104,9 @@ export default defineType({
       title: 'title',
       slug: 'slug.current',
       isActive: 'active',
-      // Optional: to show related vehicle name in preview
-      // relatedVehicleName: 'relatedVehicleData.name'
     },
-    prepare({title, slug, isActive /*, relatedVehicleName*/}) {
+    prepare({title, slug, isActive}) {
       let subtitle = `${isActive === false ? '🔴 Inactive | ' : ''}${slug ? `/products/${slug}` : 'No slug'}`
-      // if (relatedVehicleName) subtitle += ` | Linked Vehicle: ${relatedVehicleName}`;
       return {
         title: title || 'Untitled Product Page',
         subtitle: subtitle.trim(),

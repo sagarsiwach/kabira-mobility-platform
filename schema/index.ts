@@ -23,33 +23,32 @@ import testRidePage from './singletons/testRidePage'
 // --- Objects ---
 // Core Reusable Objects
 import address from './objects/address'
-import blockContent from './objects/blockContent' // Assuming this is your main rich text editor type
+import blockContent from './objects/blockContent'
 import contact from './objects/contact'
 import ctaBlock from './objects/ctaBlock'
 import link from './objects/link'
 import seoSettings from './objects/seoSettings'
 
-// Product Page Builder Blocks (Specific to sections like Hero, Configurator, etc.)
+// Product Page Builder Blocks
 import heroSectionBlock from './objects/product/heroSectionBlock'
 import configuratorSectionBlock from './objects/product/configuratorSectionBlock'
-import featureSlide from './objects/product/featureSlide' // NEW: Individual slide definition
-import featureCarouselBlock from './objects/product/featureCarouselBlock' // NEW: The carousel block itself
+import featureSlide from './objects/product/featureSlide'
+import featureCarouselBlock from './objects/product/featureCarouselBlock'
+import videoBlock from './objects/product/videoBlock'
+import galleryImage from './objects/product/galleryImage' // <<< NEWLY ADDED
+import galleryBlock from './objects/product/galleryBlock' // <<< NEWLY ADDED
 
-// Other Shared/Reusable Objects (Can be used in Page Builders)
+// Other Shared/Reusable Objects
 import dealerHours from './objects/dealerHours'
 import faqBlock from './objects/faqBlock'
-import videoSection from './objects/videoSection'
+// import videoSection from './objects/videoSection' // Decide if this is fully replaced by videoBlock
 import textWithImageBlock from './objects/textWithImageBlock'
 
-// Vehicle / Booking Specific Objects (Primarily used within the 'vehicle' document type)
+// Vehicle / Booking Specific Objects
 import colorOption from './objects/colorOption'
 import componentOption from './objects/componentOption'
 import pricingRule from './objects/pricingRule'
 import variant from './objects/variant'
-
-// Legacy/Potentially Obsolete objects (review if still needed or if functionality is covered by blocks)
-// import heroSection from './objects/heroSection' // If different from heroSectionBlock
-// import faqSection from './objects/faqSection'   // If different from faqBlock
 
 export const schemaTypes = [
   // === Documents ===
@@ -75,7 +74,7 @@ export const schemaTypes = [
   // === Objects ===
   // Core & Reusable
   address,
-  blockContent, // Crucial for featureSlide.popupContent and other rich text fields
+  blockContent,
   contact,
   ctaBlock,
   link,
@@ -84,22 +83,21 @@ export const schemaTypes = [
   // Product Page Builder Blocks & Their Components
   heroSectionBlock,
   configuratorSectionBlock,
-  featureSlide, // Definition for items within the carousel
-  featureCarouselBlock, // The carousel block itself for page builder
+  featureSlide,
+  featureCarouselBlock,
+  videoBlock,
+  galleryImage, // <<< NEWLY ADDED
+  galleryBlock, // <<< NEWLY ADDED
 
   // Other Shared Objects for Page Builders or direct use
   dealerHours,
-  faqBlock, // For embedding FAQs using references
+  faqBlock,
   textWithImageBlock,
-  videoSection,
+  // videoSection, // Remove if videoBlock is the full replacement
 
   // Vehicle/Booking Related Objects
   colorOption,
   componentOption,
   pricingRule,
   variant,
-
-  // Legacy / Obsolete (Remove if not used)
-  // heroSection,
-  // faqSection,
 ]

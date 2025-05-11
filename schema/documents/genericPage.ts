@@ -1,6 +1,6 @@
 // schema/documents/genericPage.ts
 import {defineField, defineType} from 'sanity'
-import {DocumentIcon} from '@sanity/icons' // Use a generic icon
+import {DocumentIcon} from '@sanity/icons'
 
 export default defineType({
   name: 'genericPage',
@@ -12,7 +12,6 @@ export default defineType({
     {name: 'seo', title: 'SEO'},
   ],
   fields: [
-    // Content Group
     defineField({
       name: 'title',
       title: 'Page Title',
@@ -38,16 +37,15 @@ export default defineType({
       title: 'Page Content Builder',
       type: 'array',
       group: 'content',
+      initialValue: [],
       description: 'Add and arrange content blocks to build the page.',
       of: [
-        // Define the types of blocks that can be added
         {type: 'blockContent', title: 'Text Block'},
         {
           type: 'image',
           title: 'Image Block',
           options: {hotspot: true},
           fields: [
-            // Add alt text field to image
             defineField({
               name: 'alt',
               type: 'string',
@@ -58,20 +56,20 @@ export default defineType({
             }),
           ],
         },
-        {type: 'videoSection', title: 'Video Block'},
+        {type: 'videoBlock', title: 'Featured Video Block'},
+        {type: 'galleryBlock', title: 'Image Gallery'}, // <<< ADDED
         {type: 'ctaBlock', title: 'Call to Action'},
         {type: 'textWithImageBlock', title: 'Text w/ Image'},
-        // Removed unknown types: downloadList, testimonialSection
+        // {type: 'featureCarouselBlock', title: 'Feature Carousel'}, // Add if needed for generic pages
+        // {type: 'faqBlock', title: 'FAQ Section'}, // Add if needed for generic pages
       ],
       validation: (Rule) =>
         Rule.required().min(1).error('Page must have at least one content block.'),
     }),
-
-    // SEO Group
     defineField({
       name: 'seo',
       title: 'SEO Settings',
-      type: 'seoSettings', // Use the enhanced SEO object
+      type: 'seoSettings',
       group: 'seo',
       description: 'Configure search engine appearance for this page.',
     }),
